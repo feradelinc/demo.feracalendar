@@ -1,0 +1,144 @@
+{
+  "status": "DEPLOYED_AND_VERIFIED",
+  "observedAt": "2026-10-11T21:36:19.476Z",
+  "studio": {
+    "status": "DEPLOYED",
+    "commit": "2b63bfea7a776cf7fcf605031ad1d13ef38e7245",
+    "sha256": "8a04a8c30618b37a0bf65506078e17de3a58d3df5058238976ccce32d7252241",
+    "host": "54.156.64.47",
+    "url": "https://calendar.deweyscrewem.com",
+    "release": "2b63bfe",
+    "previous": "15ee5f9",
+    "observedAt": "2026-10-11T21:28:59.570Z"
+  },
+  "publicVerification": {
+    "config": {
+      "status": 200,
+      "body": {
+        "auth": "https://api.auth.feradel.com",
+        "calendar": "https://api.calendar.feradel.com",
+        "caldav": "https://caldav.feradel.com",
+        "instance": "",
+        "email": "",
+        "mode": "live",
+        "apiKeySupported": true
+      }
+    },
+    "session": {
+      "status": 200,
+      "body": {
+        "authenticated": false,
+        "caldavConnected": false,
+        "expires": null,
+        "instance": null,
+        "user": null,
+        "prefix": null,
+        "created": []
+      }
+    },
+    "invalidLogin": {
+      "status": 400,
+      "body": {
+        "message": "A valid instance UUID is required"
+      }
+    },
+    "unauthenticatedExecute": {
+      "status": 401
+    },
+    "browserErrors": [],
+    "dnsResolverOverride": "Used during DNS negative-cache propagation; public IP and certificate verified",
+    "fixtureInterception": false,
+    "authenticatedLiveWorkflowRun": false,
+    "observedAt": "2026-10-11T21:29:28.591Z",
+    "foreignOriginStatus": 403,
+    "certificateHostname": "calendar.deweyscrewem.com",
+    "certificateExpires": "2027-01-09",
+    "renewalTimer": "snap.certbot.renew.timer",
+    "renewalTimerEnabled": true,
+    "renewalDryRunPassed": false,
+    "renewalDryRunLimitation": "Two staging renewal rehearsals reported DNS networking errors during secondary A/AAAA validation. Current production certificate issuance succeeded and HTTPS is verified; renewal rehearsal remains unqualified.",
+    "authoritativeDNS": "54.156.64.47",
+    "googleAndCloudflareDNSVerified": true
+  },
+  "backend": {
+    "releaseId": "v0.1.0-api-release.20261011.83",
+    "artifactSha256": "ecadcbf0cf7bcde3635ac1154a96ecd2534299c6934befe1570a107a0c103b8a",
+    "launchTemplateVersion": "58",
+    "refreshStatus": "Successful",
+    "refreshId": "1448ad2e-2a0d-465f-88ba-a19a4209697d",
+    "healthyTargets": 24,
+    "rollback": "v0.1.0-api-release.20261011.82",
+    "corrections": {
+      "baselineRelease": "v0.1.0-api-release.20261011.82",
+      "changedRuntimeFiles": [
+        "services/feradel.calendar.api/routes/api/v1/person/service.js",
+        "services/feradel.calendar.caldav/src/caldav/ics.js"
+      ],
+      "mattersRuntimeFilesIdentical": true,
+      "allOtherServiceFilesIdentical": true,
+      "calendarUnitTests": 18,
+      "caldavUnitTests": 20,
+      "signedMattersScopeRegressionPassed": true,
+      "sourceCommits": [
+        {
+          "repository": "feradel.calendar.api",
+          "file": "routes/api/v1/person/service.js",
+          "commit": "80993088f407ed93c9771dee919cb7f449e71226",
+          "mergedCommit": "7db507cd8281291a185427138500d783bb84a6f2"
+        },
+        {
+          "repository": "feradel.calendar.caldav",
+          "file": "src/caldav/ics.js",
+          "commit": "3536e5afc1ab10205b6cd98337bf64175384586b",
+          "mergedCommit": "426bdade6606220d038e31f1c164ade5337e8f1d"
+        }
+      ],
+      "canaryRequiredBeforePromotion": true
+    },
+    "nodes": [
+      {
+        "instanceId": "i-02323f3cdb2b1c3be",
+        "onlineProcesses": 12,
+        "healthAndIdentityChecks": 36,
+        "processRestarts": 0,
+        "mattersFilesVerified": 808,
+        "mattersTreeSha256": "7eeeb9c92472fb0fec2157b68272f103067525f327b576486be5b136963fe41e",
+        "signedMattersRegressionPassed": true,
+        "linuxTargetedTests": 14
+      },
+      {
+        "instanceId": "i-0f656e4c36a6e3369",
+        "onlineProcesses": 12,
+        "healthAndIdentityChecks": 36,
+        "processRestarts": 0,
+        "mattersFilesVerified": 808,
+        "mattersTreeSha256": "7eeeb9c92472fb0fec2157b68272f103067525f327b576486be5b136963fe41e",
+        "signedMattersRegressionPassed": true,
+        "linuxTargetedTests": 14
+      }
+    ],
+    "canaryTerminated": true
+  },
+  "tests": {
+    "studioNode": 33,
+    "studioBrowserAndAccessibility": 7,
+    "calendarUnit": 18,
+    "caldavUnit": 20,
+    "linuxTargetedPerNode": 14,
+    "authenticatedLiveAccountWorkflowRun": false
+  },
+  "coverage": {
+    "publicREST": 30,
+    "internalDocumented": 4,
+    "deprecatedAliasesExcluded": 34,
+    "caldavRegistrations": 30
+  },
+  "matters": {
+    "sourceAndRuntimeConfigurationPreserved": true,
+    "packagedFilesVerifiedPerNode": 808,
+    "publicReadyStatus": 200,
+    "localCheckoutHead": "d267fa3e573fe7e7bfa3b1c9c43a81d8615f0492",
+    "localCheckoutClean": true
+  },
+  "customerRecordsChanged": 0
+}
