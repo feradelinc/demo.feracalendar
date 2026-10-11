@@ -4,6 +4,8 @@ A standalone React/Vite and Express developer workspace for FeraCal REST and Cal
 
 The normal application always uses live upstream responses. Browser tests explicitly intercept requests with synthetic fixtures; fixture data is never a runtime fallback.
 
+Hosted Studio: **https://calendar.deweyscrewem.com**. Enter your authorized instance UUID and credentials; no shared tenant or account is embedded. See [hosting configuration](docs/hosting.md).
+
 ## Start locally
 
 Requires Node 22.12 or later and npm.
@@ -19,7 +21,7 @@ npm run dev
 
 Windows startup helper: `powershell -File scripts/start.ps1`. For a built local application, run `npm run build` and `npm start`.
 
-Verified source defaults are FerAuth `http://localhost:10443`, Calendar REST `http://localhost:11400` and CalDAV `http://localhost:11410`. FerAuth's default differs from the example port 11000 used in the Render demo. Remote HTTPS bases require explicit entries in `ALLOWED_API_URLS`. The Studio binds to loopback and rejects remote Host headers; no public deployment is configured.
+Verified source defaults are FerAuth `http://localhost:10443`, Calendar REST `http://localhost:11400` and CalDAV `http://localhost:11410`. FerAuth's default differs from the example port 11000 used in the Render demo. Remote HTTPS bases require explicit entries in `ALLOWED_API_URLS`. The Studio binds to loopback. Local mode rejects remote Host headers; hosted mode requires an exact HTTPS `PUBLIC_ORIGIN` and the configured loopback reverse proxy.
 
 ## What is implemented
 
@@ -47,7 +49,7 @@ The Node suite exercises the actual proxy with explicit isolated upstream fixtur
 
 The smoke command refuses unless `SMOKE_NONPRODUCTION=true`, `INSTANCE_UUID`, `SMOKE_EMAIL` and `SMOKE_PASSWORD` are configured for an expressly authorized nonproduction account. Separate CalDAV credentials require `SMOKE_CALDAV=true`. Cleanup defaults to false. Reports under ignored `output/` retain created UUIDs and sanitized step evidence. No live account was supplied or exercised during implementation.
 
-**Backend correction required:** the audited people controller invokes a missing `service.get`, so live people key/availability requests fail until the separate correction is reviewed and applied. Additional tenant-boundary, ETag and all-day discrepancies are recorded in [backend discrepancies](docs/backend-discrepancies.md). Review-only patches are included; no backend or infrastructure changes were made.
+The original pinned-source audit found a missing people getter plus owner-boundary, ETag and all-day discrepancies. The current production branch already contains stronger scope and atomic ETag guards; the follow-up restores people reads and corrects all-day serialization while preserving signed Matters calls. Historical patches remain audit evidence, not a batch to apply over current production. Current resolver routes require `VERIFY.CALDAV`; the guided walkthrough uses ordinary calendar access reads instead. See [backend discrepancies](docs/backend-discrepancies.md) and [hosting configuration](docs/hosting.md).
 
 ## Screenshots
 

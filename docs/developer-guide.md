@@ -2,7 +2,7 @@
 
 ## Architecture
 
-`server/app.js` owns fixed upstream destinations, transient sessions, authentication, credential isolation, registry dispatch, owner verification and mutation provenance. `server/index.js` serves Vite middleware during development and the built static frontend in local production mode. Both bind to `127.0.0.1`.
+`server/app.js` owns fixed upstream destinations, transient sessions, authentication, credential isolation, registry dispatch, owner verification and mutation provenance. `server/index.js` serves Vite middleware during development and the built static frontend in production mode. Both bind to `127.0.0.1`. Authorized hosting adds an exact HTTPS `PUBLIC_ORIGIN`, loopback proxy trust, bounded session/client maps and login/request throttling; see [hosting](hosting.md).
 
 `shared/operations.json` is generated from the pinned REST and CalDAV OpenAPI snapshots by `scripts/audit.mjs`. The audit verifies methods, exact/trailing-slash/descendant paths and handlers against actual Express registrations, checks for undocumented source registrations, and records source commits and contract hashes. Original operation identifiers are preserved, including the REST generator's trailing `}` characters. CalDAV extension keys become actual `PROPFIND` and `REPORT` methods.
 

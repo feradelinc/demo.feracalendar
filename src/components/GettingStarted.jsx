@@ -34,7 +34,7 @@ export default function GettingStarted({ config, session, refresh, run }) {
     <div className="two">
       <section className="panel">
         <h2>Connect to FeraCal</h2>
-        <p>A live API session, kept in memory on this local server.</p>
+        <p>A live API session, kept in server memory until it expires.</p>
         <dl>
           <dt>FerAuth endpoint</dt>
           <dd>{config.auth}/api/v1/auth</dd>

@@ -260,6 +260,21 @@ test("Northstar workflow performs read-after-write, sharing, participation, recu
       }
     assert.equal((await call("session")).data.created.length, 0);
   }));
+test("guided walkthrough succeeds without the backend-only VERIFY.CALDAV resolver permission", () => {
+  const f = fixture();
+  return harness(async (call) => {
+    await login(call);
+    const session = (await call("session")).data;
+    await walkthrough({ session, date: "2027-06-15", sharedUser: user,
+      execute: async (p) => {
+        return (await call("execute", p)).data;
+      }
+    });
+    assert.equal(f.records.events.size, 3);
+  }, { fetchImpl: (url, options) => url.includes("/calendars/resolve/")
+    ? Response.json({ success: false, error: { message: "VERIFY.CALDAV required" } }, { status: 403 })
+    : f.fetchImpl(url, options) });
+});
 test("owner verification refuses cross-tenant resolve and event query", () =>
   harness(async (call, f) => {
     await login(call);
