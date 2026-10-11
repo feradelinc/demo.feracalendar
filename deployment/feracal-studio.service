@@ -1,0 +1,28 @@
+[Unit]
+Description=FeraCalendar Developer Studio
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=feracal-demo
+Group=feracal-demo
+WorkingDirectory=/opt/feracal-studio/current
+EnvironmentFile=/etc/feracal-studio/production.env
+ExecStart=/usr/bin/node server/index.js --production
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+UMask=0077
+MemoryMax=512M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target
