@@ -1,0 +1,524 @@
+[
+  {
+    "method": "POST",
+    "url": "{{calendarBase}}/api/v1/calendars",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "name": "Northstar Client Meetings YOUR_SESSION_PREFIX",
+      "shared": false,
+      "person": "RETURNED_OWNER_PERSON_UUID"
+    }
+  },
+  {
+    "method": "POST",
+    "url": "{{calendarBase}}/api/v1/calendars/share",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "calendar": "RETURNED_CALENDAR_UUID",
+      "person": "RETURNED_PERSON_UUID",
+      "inviter": "RETURNED_OWNER_PERSON_UUID",
+      "role": "editor"
+    }
+  },
+  {
+    "method": "POST",
+    "url": "{{calendarBase}}/api/v1/calendars/unshare",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "calendar": "RETURNED_CALENDAR_UUID",
+      "person": "RETURNED_PERSON_UUID",
+      "inviter": "RETURNED_OWNER_PERSON_UUID",
+      "role": "editor"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/calendars/access/u/{{userUuid}}/v/15",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/calendars/resolve/{{uuid}}/u/{{userUuid}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/calendars/resolve/{{uuid}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/calendars/o/k/{{key}}/v/15",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/calendars/v/15",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/calendars/i/{{uuid}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "DELETE",
+    "url": "{{calendarBase}}/api/v1/calendars/i/{{uuid}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "POST",
+    "url": "{{calendarBase}}/api/v1/people",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "key": "YOUR_SESSION_PREFIX-avery",
+      "firstName": "Avery",
+      "lastName": "Morgan",
+      "displayName": "Avery Morgan",
+      "email": "YOUR_SESSION_PREFIX-avery@example.test"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/people/o/k/{{key}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/people/available/s/2027-06-15T14%3A00%3A00Z/e/2027-06-15T15%3A00%3A00Z",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "DELETE",
+    "url": "{{calendarBase}}/api/v1/people/i/{{uuid}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "DELETE",
+    "url": "{{calendarBase}}/api/v1/people/k/{{key}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "POST",
+    "url": "{{calendarBase}}/api/v1/resources",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "key": "YOUR_SESSION_PREFIX-room",
+      "displayName": "Conference Room A",
+      "email": "YOUR_SESSION_PREFIX-room@example.test"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/resources",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/resources/o/k/{{key}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/resources/available/s/2027-06-15T14%3A00%3A00Z/e/2027-06-15T15%3A00%3A00Z",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "DELETE",
+    "url": "{{calendarBase}}/api/v1/resources/i/{{uuid}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "DELETE",
+    "url": "{{calendarBase}}/api/v1/resources/k/{{key}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "POST",
+    "url": "{{calendarBase}}/api/v1/events",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "title": "New Client Consultation",
+      "description": "Fictional Northstar Consulting calendar demonstration.",
+      "location": "Conference Room A",
+      "startsAt": "2027-06-15T14:00:00Z",
+      "endsAt": "2027-06-15T15:00:00Z",
+      "allDay": false,
+      "status": "confirmed",
+      "style": "event",
+      "recurrence": null,
+      "calendar": "RETURNED_CALENDAR_UUID",
+      "creator": "RETURNED_OWNER_PERSON_UUID"
+    }
+  },
+  {
+    "method": "POST",
+    "url": "{{calendarBase}}/api/v1/events/invite",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "event": "RETURNED_EVENT_UUID",
+      "person": "RETURNED_PERSON_UUID",
+      "invitedBy": "RETURNED_OWNER_PERSON_UUID",
+      "status": "accepted",
+      "role": "req",
+      "mark": "busy"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/events/o/k/{{key}}/v/15",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/events/i/{{uuid}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "DELETE",
+    "url": "{{calendarBase}}/api/v1/events/i/{{uuid}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/events/history/c/{{calendar}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/events/s/2027-06-15T14%3A00%3A00Z/e/2027-06-15T15%3A00%3A00Z/k/{{key}}/v/15",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/events/s/2027-06-15T14%3A00%3A00Z/e/2027-06-15T15%3A00%3A00Z/c/{{calendar}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "DELETE",
+    "url": "{{calendarBase}}/api/v1/events/i/{{uuid}}/k/{{key}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "OPTIONS",
+    "url": "{{caldavBase}}/caldav/events",
+    "headers": {}
+  },
+  {
+    "method": "HEAD",
+    "url": "{{caldavBase}}/caldav/principals/{{instance}}/{{person}}",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}"
+    }
+  },
+  {
+    "method": "PROPFIND",
+    "url": "{{caldavBase}}/caldav/principals/{{instance}}/{{person}}",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}",
+      "depth": "1",
+      "content-type": "application/xml"
+    },
+    "body": "<?xml version=\"1.0\"?><d:propfind xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:caldav\"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>"
+  },
+  {
+    "method": "HEAD",
+    "url": "{{caldavBase}}/caldav/principals/{{instance}}/{{person}}/",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}"
+    }
+  },
+  {
+    "method": "PROPFIND",
+    "url": "{{caldavBase}}/caldav/principals/{{instance}}/{{person}}/",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}",
+      "depth": "1",
+      "content-type": "application/xml"
+    },
+    "body": "<?xml version=\"1.0\"?><d:propfind xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:caldav\"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>"
+  },
+  {
+    "method": "OPTIONS",
+    "url": "{{caldavBase}}/caldav/instance/{{instance}}",
+    "headers": {}
+  },
+  {
+    "method": "HEAD",
+    "url": "{{caldavBase}}/caldav/instance/{{instance}}",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}"
+    }
+  },
+  {
+    "method": "PROPFIND",
+    "url": "{{caldavBase}}/caldav/instance/{{instance}}",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}",
+      "depth": "1",
+      "content-type": "application/xml"
+    },
+    "body": "<?xml version=\"1.0\"?><d:propfind xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:caldav\"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>"
+  },
+  {
+    "method": "OPTIONS",
+    "url": "{{caldavBase}}/caldav/instance/{{instance}}/",
+    "headers": {}
+  },
+  {
+    "method": "HEAD",
+    "url": "{{caldavBase}}/caldav/instance/{{instance}}/",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}"
+    }
+  },
+  {
+    "method": "PROPFIND",
+    "url": "{{caldavBase}}/caldav/instance/{{instance}}/",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}",
+      "depth": "1",
+      "content-type": "application/xml"
+    },
+    "body": "<?xml version=\"1.0\"?><d:propfind xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:caldav\"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>"
+  },
+  {
+    "method": "OPTIONS",
+    "url": "{{caldavBase}}/caldav/instance/{{instance}}/events",
+    "headers": {}
+  },
+  {
+    "method": "HEAD",
+    "url": "{{caldavBase}}/caldav/instance/{{instance}}/events",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}"
+    }
+  },
+  {
+    "method": "PROPFIND",
+    "url": "{{caldavBase}}/caldav/instance/{{instance}}/events",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}",
+      "depth": "1",
+      "content-type": "application/xml"
+    },
+    "body": "<?xml version=\"1.0\"?><d:propfind xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:caldav\"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>"
+  },
+  {
+    "method": "OPTIONS",
+    "url": "{{caldavBase}}/caldav/calendars/{{calendarUuid}}",
+    "headers": {}
+  },
+  {
+    "method": "HEAD",
+    "url": "{{caldavBase}}/caldav/calendars/{{calendarUuid}}",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}"
+    }
+  },
+  {
+    "method": "PROPFIND",
+    "url": "{{caldavBase}}/caldav/calendars/{{calendarUuid}}",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}",
+      "depth": "1",
+      "content-type": "application/xml"
+    },
+    "body": "<?xml version=\"1.0\"?><d:propfind xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:caldav\"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>"
+  },
+  {
+    "method": "REPORT",
+    "url": "{{caldavBase}}/caldav/calendars/{{calendarUuid}}",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}",
+      "depth": "1",
+      "content-type": "application/xml"
+    },
+    "body": "<?xml version=\"1.0\"?><c:calendar-query xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:caldav\"><d:prop><d:getetag/><c:calendar-data/></d:prop><c:filter><c:comp-filter name=\"VCALENDAR\"><c:comp-filter name=\"VEVENT\"/></c:comp-filter></c:filter></c:calendar-query>"
+  },
+  {
+    "method": "OPTIONS",
+    "url": "{{caldavBase}}/caldav/calendars/{{calendarUuid}}/",
+    "headers": {}
+  },
+  {
+    "method": "HEAD",
+    "url": "{{caldavBase}}/caldav/calendars/{{calendarUuid}}/",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}"
+    }
+  },
+  {
+    "method": "PROPFIND",
+    "url": "{{caldavBase}}/caldav/calendars/{{calendarUuid}}/",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}",
+      "depth": "1",
+      "content-type": "application/xml"
+    },
+    "body": "<?xml version=\"1.0\"?><d:propfind xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:caldav\"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>"
+  },
+  {
+    "method": "REPORT",
+    "url": "{{caldavBase}}/caldav/calendars/{{calendarUuid}}/",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}",
+      "depth": "1",
+      "content-type": "application/xml"
+    },
+    "body": "<?xml version=\"1.0\"?><c:calendar-query xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:caldav\"><d:prop><d:getetag/><c:calendar-data/></d:prop><c:filter><c:comp-filter name=\"VCALENDAR\"><c:comp-filter name=\"VEVENT\"/></c:comp-filter></c:filter></c:calendar-query>"
+  },
+  {
+    "method": "OPTIONS",
+    "url": "{{caldavBase}}/caldav/calendars/{{calendarUuid}}/events",
+    "headers": {}
+  },
+  {
+    "method": "HEAD",
+    "url": "{{caldavBase}}/caldav/calendars/{{calendarUuid}}/events",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}"
+    }
+  },
+  {
+    "method": "PROPFIND",
+    "url": "{{caldavBase}}/caldav/calendars/{{calendarUuid}}/events",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}",
+      "depth": "1",
+      "content-type": "application/xml"
+    },
+    "body": "<?xml version=\"1.0\"?><d:propfind xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:caldav\"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>"
+  },
+  {
+    "method": "REPORT",
+    "url": "{{caldavBase}}/caldav/calendars/{{calendarUuid}}/events",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}",
+      "depth": "1",
+      "content-type": "application/xml"
+    },
+    "body": "<?xml version=\"1.0\"?><c:calendar-query xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:caldav\"><d:prop><d:getetag/><c:calendar-data/></d:prop><c:filter><c:comp-filter name=\"VCALENDAR\"><c:comp-filter name=\"VEVENT\"/></c:comp-filter></c:filter></c:calendar-query>"
+  },
+  {
+    "method": "GET",
+    "url": "{{caldavBase}}/caldav/calendars/{{calendarUuid}}/11111111-1111-4111-8111-111111111111.ics",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}"
+    }
+  },
+  {
+    "method": "PUT",
+    "url": "{{caldavBase}}/caldav/calendars/{{calendarUuid}}/11111111-1111-4111-8111-111111111111.ics",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}",
+      "content-type": "text/calendar",
+      "if-match": "{{capturedETag}}"
+    },
+    "body": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Feradel//FeraCalendar Developer Studio//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:11111111-1111-4111-8111-111111111111\r\nDTSTAMP:20261011T204426Z\r\nDTSTART:20270615T140000Z\r\nDTEND:20270615T150000Z\r\nSUMMARY:New Client Consultation\r\nDESCRIPTION:Fictional Northstar Consulting calendar demonstration.\r\nLOCATION:Conference Room A\r\nSTATUS:CONFIRMED\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+  },
+  {
+    "method": "DELETE",
+    "url": "{{caldavBase}}/caldav/calendars/{{calendarUuid}}/11111111-1111-4111-8111-111111111111.ics",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}"
+    }
+  }
+]

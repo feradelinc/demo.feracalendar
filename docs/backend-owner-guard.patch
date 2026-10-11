@@ -1,0 +1,13 @@
+--- a/middleware/auth.js
++++ b/middleware/auth.js
+@@ -24,6 +24,10 @@
+             secret: process.env.FERADEL_LIFECYCLE_CALLBACK_SECRET || process.env.FERADEL_LIFECYCLE_HOOK_SECRET || ""
+         });
+         
++        const suppliedOwner = req.body?.owner?.uuid ?? req.body?.owner;
++        if (suppliedOwner != null && suppliedOwner !== (req.instance?.uuid ?? req.instance)) {
++            return res.status(403).json({ success: false, error: { message: "Owner does not match authenticated instance" } });
++        }
+         next();
+     } catch ( error )
+     {

@@ -1,0 +1,31 @@
+{
+  "name": "demo.feracalendar",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server/index.js",
+    "start": "node server/index.js --production",
+    "build": "vite build",
+    "audit": "node scripts/audit.mjs",
+    "test": "node --test tests/*.test.js",
+    "test:ui": "playwright test",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "@js-temporal/polyfill": "^0.5.1",
+    "@xmldom/xmldom": "^0.8.11",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.62.1",
+    "vite": "^7.1.0"
+  },
+  "engines": {
+    "node": ">=22.12"
+  }
+}

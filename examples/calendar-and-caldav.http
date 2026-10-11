@@ -1,0 +1,396 @@
+# Illustrative source-audited requests. Replace identifiers from actual responses.
+# Credentials must be supplied from secure memory, not saved in this file.
+# DELETE requests are manual and require your explicit scoped decision.
+
+### POST {{calendarBase}}/api/v1/calendars
+POST {{calendarBase}}/api/v1/calendars
+instance: {{instance}}
+x-auth-token: {{jwt}}
+content-type: application/json
+
+{
+  "name": "Northstar Client Meetings YOUR_SESSION_PREFIX",
+  "shared": false,
+  "person": "RETURNED_OWNER_PERSON_UUID"
+}
+
+### POST {{calendarBase}}/api/v1/calendars/share
+POST {{calendarBase}}/api/v1/calendars/share
+instance: {{instance}}
+x-auth-token: {{jwt}}
+content-type: application/json
+
+{
+  "calendar": "RETURNED_CALENDAR_UUID",
+  "person": "RETURNED_PERSON_UUID",
+  "inviter": "RETURNED_OWNER_PERSON_UUID",
+  "role": "editor"
+}
+
+### POST {{calendarBase}}/api/v1/calendars/unshare
+POST {{calendarBase}}/api/v1/calendars/unshare
+instance: {{instance}}
+x-auth-token: {{jwt}}
+content-type: application/json
+
+{
+  "calendar": "RETURNED_CALENDAR_UUID",
+  "person": "RETURNED_PERSON_UUID",
+  "inviter": "RETURNED_OWNER_PERSON_UUID",
+  "role": "editor"
+}
+
+### GET {{calendarBase}}/api/v1/calendars/access/u/{{userUuid}}/v/15
+GET {{calendarBase}}/api/v1/calendars/access/u/{{userUuid}}/v/15
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/calendars/resolve/{{uuid}}/u/{{userUuid}}
+GET {{calendarBase}}/api/v1/calendars/resolve/{{uuid}}/u/{{userUuid}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/calendars/resolve/{{uuid}}
+GET {{calendarBase}}/api/v1/calendars/resolve/{{uuid}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/calendars/o/k/{{key}}/v/15
+GET {{calendarBase}}/api/v1/calendars/o/k/{{key}}/v/15
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/calendars/v/15
+GET {{calendarBase}}/api/v1/calendars/v/15
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/calendars/i/{{uuid}}
+GET {{calendarBase}}/api/v1/calendars/i/{{uuid}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### DELETE {{calendarBase}}/api/v1/calendars/i/{{uuid}}
+DELETE {{calendarBase}}/api/v1/calendars/i/{{uuid}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### POST {{calendarBase}}/api/v1/people
+POST {{calendarBase}}/api/v1/people
+instance: {{instance}}
+x-auth-token: {{jwt}}
+content-type: application/json
+
+{
+  "key": "YOUR_SESSION_PREFIX-avery",
+  "firstName": "Avery",
+  "lastName": "Morgan",
+  "displayName": "Avery Morgan",
+  "email": "YOUR_SESSION_PREFIX-avery@example.test"
+}
+
+### GET {{calendarBase}}/api/v1/people/o/k/{{key}}
+GET {{calendarBase}}/api/v1/people/o/k/{{key}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/people/available/s/2027-06-15T14%3A00%3A00Z/e/2027-06-15T15%3A00%3A00Z
+GET {{calendarBase}}/api/v1/people/available/s/2027-06-15T14%3A00%3A00Z/e/2027-06-15T15%3A00%3A00Z
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### DELETE {{calendarBase}}/api/v1/people/i/{{uuid}}
+DELETE {{calendarBase}}/api/v1/people/i/{{uuid}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### DELETE {{calendarBase}}/api/v1/people/k/{{key}}
+DELETE {{calendarBase}}/api/v1/people/k/{{key}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### POST {{calendarBase}}/api/v1/resources
+POST {{calendarBase}}/api/v1/resources
+instance: {{instance}}
+x-auth-token: {{jwt}}
+content-type: application/json
+
+{
+  "key": "YOUR_SESSION_PREFIX-room",
+  "displayName": "Conference Room A",
+  "email": "YOUR_SESSION_PREFIX-room@example.test"
+}
+
+### GET {{calendarBase}}/api/v1/resources
+GET {{calendarBase}}/api/v1/resources
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/resources/o/k/{{key}}
+GET {{calendarBase}}/api/v1/resources/o/k/{{key}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/resources/available/s/2027-06-15T14%3A00%3A00Z/e/2027-06-15T15%3A00%3A00Z
+GET {{calendarBase}}/api/v1/resources/available/s/2027-06-15T14%3A00%3A00Z/e/2027-06-15T15%3A00%3A00Z
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### DELETE {{calendarBase}}/api/v1/resources/i/{{uuid}}
+DELETE {{calendarBase}}/api/v1/resources/i/{{uuid}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### DELETE {{calendarBase}}/api/v1/resources/k/{{key}}
+DELETE {{calendarBase}}/api/v1/resources/k/{{key}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### POST {{calendarBase}}/api/v1/events
+POST {{calendarBase}}/api/v1/events
+instance: {{instance}}
+x-auth-token: {{jwt}}
+content-type: application/json
+
+{
+  "title": "New Client Consultation",
+  "description": "Fictional Northstar Consulting calendar demonstration.",
+  "location": "Conference Room A",
+  "startsAt": "2027-06-15T14:00:00Z",
+  "endsAt": "2027-06-15T15:00:00Z",
+  "allDay": false,
+  "status": "confirmed",
+  "style": "event",
+  "recurrence": null,
+  "calendar": "RETURNED_CALENDAR_UUID",
+  "creator": "RETURNED_OWNER_PERSON_UUID"
+}
+
+### POST {{calendarBase}}/api/v1/events/invite
+POST {{calendarBase}}/api/v1/events/invite
+instance: {{instance}}
+x-auth-token: {{jwt}}
+content-type: application/json
+
+{
+  "event": "RETURNED_EVENT_UUID",
+  "person": "RETURNED_PERSON_UUID",
+  "invitedBy": "RETURNED_OWNER_PERSON_UUID",
+  "status": "accepted",
+  "role": "req",
+  "mark": "busy"
+}
+
+### GET {{calendarBase}}/api/v1/events/o/k/{{key}}/v/15
+GET {{calendarBase}}/api/v1/events/o/k/{{key}}/v/15
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/events/i/{{uuid}}
+GET {{calendarBase}}/api/v1/events/i/{{uuid}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### DELETE {{calendarBase}}/api/v1/events/i/{{uuid}}
+DELETE {{calendarBase}}/api/v1/events/i/{{uuid}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/events/history/c/{{calendar}}
+GET {{calendarBase}}/api/v1/events/history/c/{{calendar}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/events/s/2027-06-15T14%3A00%3A00Z/e/2027-06-15T15%3A00%3A00Z/k/{{key}}/v/15
+GET {{calendarBase}}/api/v1/events/s/2027-06-15T14%3A00%3A00Z/e/2027-06-15T15%3A00%3A00Z/k/{{key}}/v/15
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/events/s/2027-06-15T14%3A00%3A00Z/e/2027-06-15T15%3A00%3A00Z/c/{{calendar}}
+GET {{calendarBase}}/api/v1/events/s/2027-06-15T14%3A00%3A00Z/e/2027-06-15T15%3A00%3A00Z/c/{{calendar}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### DELETE {{calendarBase}}/api/v1/events/i/{{uuid}}/k/{{key}}
+DELETE {{calendarBase}}/api/v1/events/i/{{uuid}}/k/{{key}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### OPTIONS {{caldavBase}}/caldav/events
+OPTIONS {{caldavBase}}/caldav/events
+
+
+### HEAD {{caldavBase}}/caldav/principals/{{instance}}/{{person}}
+HEAD {{caldavBase}}/caldav/principals/{{instance}}/{{person}}
+authorization: {{basicFromSecureInput}}
+
+### PROPFIND {{caldavBase}}/caldav/principals/{{instance}}/{{person}}
+PROPFIND {{caldavBase}}/caldav/principals/{{instance}}/{{person}}
+authorization: {{basicFromSecureInput}}
+depth: 1
+content-type: application/xml
+
+<?xml version="1.0"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>
+
+### HEAD {{caldavBase}}/caldav/principals/{{instance}}/{{person}}/
+HEAD {{caldavBase}}/caldav/principals/{{instance}}/{{person}}/
+authorization: {{basicFromSecureInput}}
+
+### PROPFIND {{caldavBase}}/caldav/principals/{{instance}}/{{person}}/
+PROPFIND {{caldavBase}}/caldav/principals/{{instance}}/{{person}}/
+authorization: {{basicFromSecureInput}}
+depth: 1
+content-type: application/xml
+
+<?xml version="1.0"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>
+
+### OPTIONS {{caldavBase}}/caldav/instance/{{instance}}
+OPTIONS {{caldavBase}}/caldav/instance/{{instance}}
+
+
+### HEAD {{caldavBase}}/caldav/instance/{{instance}}
+HEAD {{caldavBase}}/caldav/instance/{{instance}}
+authorization: {{basicFromSecureInput}}
+
+### PROPFIND {{caldavBase}}/caldav/instance/{{instance}}
+PROPFIND {{caldavBase}}/caldav/instance/{{instance}}
+authorization: {{basicFromSecureInput}}
+depth: 1
+content-type: application/xml
+
+<?xml version="1.0"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>
+
+### OPTIONS {{caldavBase}}/caldav/instance/{{instance}}/
+OPTIONS {{caldavBase}}/caldav/instance/{{instance}}/
+
+
+### HEAD {{caldavBase}}/caldav/instance/{{instance}}/
+HEAD {{caldavBase}}/caldav/instance/{{instance}}/
+authorization: {{basicFromSecureInput}}
+
+### PROPFIND {{caldavBase}}/caldav/instance/{{instance}}/
+PROPFIND {{caldavBase}}/caldav/instance/{{instance}}/
+authorization: {{basicFromSecureInput}}
+depth: 1
+content-type: application/xml
+
+<?xml version="1.0"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>
+
+### OPTIONS {{caldavBase}}/caldav/instance/{{instance}}/events
+OPTIONS {{caldavBase}}/caldav/instance/{{instance}}/events
+
+
+### HEAD {{caldavBase}}/caldav/instance/{{instance}}/events
+HEAD {{caldavBase}}/caldav/instance/{{instance}}/events
+authorization: {{basicFromSecureInput}}
+
+### PROPFIND {{caldavBase}}/caldav/instance/{{instance}}/events
+PROPFIND {{caldavBase}}/caldav/instance/{{instance}}/events
+authorization: {{basicFromSecureInput}}
+depth: 1
+content-type: application/xml
+
+<?xml version="1.0"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>
+
+### OPTIONS {{caldavBase}}/caldav/calendars/{{calendarUuid}}
+OPTIONS {{caldavBase}}/caldav/calendars/{{calendarUuid}}
+
+
+### HEAD {{caldavBase}}/caldav/calendars/{{calendarUuid}}
+HEAD {{caldavBase}}/caldav/calendars/{{calendarUuid}}
+authorization: {{basicFromSecureInput}}
+
+### PROPFIND {{caldavBase}}/caldav/calendars/{{calendarUuid}}
+PROPFIND {{caldavBase}}/caldav/calendars/{{calendarUuid}}
+authorization: {{basicFromSecureInput}}
+depth: 1
+content-type: application/xml
+
+<?xml version="1.0"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>
+
+### REPORT {{caldavBase}}/caldav/calendars/{{calendarUuid}}
+REPORT {{caldavBase}}/caldav/calendars/{{calendarUuid}}
+authorization: {{basicFromSecureInput}}
+depth: 1
+content-type: application/xml
+
+<?xml version="1.0"?><c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><d:getetag/><c:calendar-data/></d:prop><c:filter><c:comp-filter name="VCALENDAR"><c:comp-filter name="VEVENT"/></c:comp-filter></c:filter></c:calendar-query>
+
+### OPTIONS {{caldavBase}}/caldav/calendars/{{calendarUuid}}/
+OPTIONS {{caldavBase}}/caldav/calendars/{{calendarUuid}}/
+
+
+### HEAD {{caldavBase}}/caldav/calendars/{{calendarUuid}}/
+HEAD {{caldavBase}}/caldav/calendars/{{calendarUuid}}/
+authorization: {{basicFromSecureInput}}
+
+### PROPFIND {{caldavBase}}/caldav/calendars/{{calendarUuid}}/
+PROPFIND {{caldavBase}}/caldav/calendars/{{calendarUuid}}/
+authorization: {{basicFromSecureInput}}
+depth: 1
+content-type: application/xml
+
+<?xml version="1.0"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>
+
+### REPORT {{caldavBase}}/caldav/calendars/{{calendarUuid}}/
+REPORT {{caldavBase}}/caldav/calendars/{{calendarUuid}}/
+authorization: {{basicFromSecureInput}}
+depth: 1
+content-type: application/xml
+
+<?xml version="1.0"?><c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><d:getetag/><c:calendar-data/></d:prop><c:filter><c:comp-filter name="VCALENDAR"><c:comp-filter name="VEVENT"/></c:comp-filter></c:filter></c:calendar-query>
+
+### OPTIONS {{caldavBase}}/caldav/calendars/{{calendarUuid}}/events
+OPTIONS {{caldavBase}}/caldav/calendars/{{calendarUuid}}/events
+
+
+### HEAD {{caldavBase}}/caldav/calendars/{{calendarUuid}}/events
+HEAD {{caldavBase}}/caldav/calendars/{{calendarUuid}}/events
+authorization: {{basicFromSecureInput}}
+
+### PROPFIND {{caldavBase}}/caldav/calendars/{{calendarUuid}}/events
+PROPFIND {{caldavBase}}/caldav/calendars/{{calendarUuid}}/events
+authorization: {{basicFromSecureInput}}
+depth: 1
+content-type: application/xml
+
+<?xml version="1.0"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>
+
+### REPORT {{caldavBase}}/caldav/calendars/{{calendarUuid}}/events
+REPORT {{caldavBase}}/caldav/calendars/{{calendarUuid}}/events
+authorization: {{basicFromSecureInput}}
+depth: 1
+content-type: application/xml
+
+<?xml version="1.0"?><c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><d:getetag/><c:calendar-data/></d:prop><c:filter><c:comp-filter name="VCALENDAR"><c:comp-filter name="VEVENT"/></c:comp-filter></c:filter></c:calendar-query>
+
+### GET {{caldavBase}}/caldav/calendars/{{calendarUuid}}/11111111-1111-4111-8111-111111111111.ics
+GET {{caldavBase}}/caldav/calendars/{{calendarUuid}}/11111111-1111-4111-8111-111111111111.ics
+authorization: {{basicFromSecureInput}}
+
+### PUT {{caldavBase}}/caldav/calendars/{{calendarUuid}}/11111111-1111-4111-8111-111111111111.ics
+PUT {{caldavBase}}/caldav/calendars/{{calendarUuid}}/11111111-1111-4111-8111-111111111111.ics
+authorization: {{basicFromSecureInput}}
+content-type: text/calendar
+if-match: {{capturedETag}}
+
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Feradel//FeraCalendar Developer Studio//EN
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+UID:11111111-1111-4111-8111-111111111111
+DTSTAMP:20261011T204426Z
+DTSTART:20270615T140000Z
+DTEND:20270615T150000Z
+SUMMARY:New Client Consultation
+DESCRIPTION:Fictional Northstar Consulting calendar demonstration.
+LOCATION:Conference Room A
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR
+
+
+### DELETE {{caldavBase}}/caldav/calendars/{{calendarUuid}}/11111111-1111-4111-8111-111111111111.ics
+DELETE {{caldavBase}}/caldav/calendars/{{calendarUuid}}/11111111-1111-4111-8111-111111111111.ics
+authorization: {{basicFromSecureInput}}

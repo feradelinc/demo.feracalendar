@@ -1,0 +1,11 @@
+--- a/src/caldav/ics.js
++++ b/src/caldav/ics.js
+@@ -102,7 +102,7 @@
+     if (allDay) {
+       const endBase = end && !Number.isNaN(end.getTime()) ? end : start;
+       lines.push(`DTSTART;VALUE=DATE:${dateUTC(start)}`);
+-      lines.push(`DTEND;VALUE=DATE:${dateUTC(addDaysUTC(endBase, 1))}`);
++      lines.push(`DTEND;VALUE=DATE:${dateUTC(end && !Number.isNaN(end.getTime()) ? end : addDaysUTC(start, 1))}`);
+     } else {
+       lines.push(`DTSTART:${dateTimeUTC(start)}`);
+       if (end && !Number.isNaN(end.getTime())) lines.push(`DTEND:${dateTimeUTC(end)}`);

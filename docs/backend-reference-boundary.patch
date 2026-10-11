@@ -1,0 +1,86 @@
+--- /dev/null
++++ b/middleware/calendar-owner-boundary.js
+@@ -0,0 +1,25 @@
++const Calendar = require("../models/Calendar");
++const Event = require("../models/Event");
++module.exports = async function calendarOwnerBoundary(req, res, next) {
++    try {
++        const owner = req.instance?.uuid ?? req.instance;
++        const deny = () => res.status(403).json({ success: false, error: { message: "Calendar owner boundary denied" } });
++        const calendars = new Set();
++        if (req.params.calendar) calendars.add(req.params.calendar);
++        if (req.body?.calendar) calendars.add(req.body.calendar);
++        if (req.baseUrl.endsWith("/calendars") && req.params.uuid) calendars.add(req.params.uuid);
++        const events = new Set();
++        if (req.baseUrl.endsWith("/events") && req.params.uuid) events.add(req.params.uuid);
++        if (req.body?.event) events.add(req.body.event);
++        if (req.baseUrl.endsWith("/events") && req.body?.uuid) events.add(req.body.uuid);
++        for (const uuid of events) {
++            const event = await Event.findOne({ where: { uuid } });
++            if (event) calendars.add(event.calendarUuid);
++        }
++        for (const uuid of calendars) {
++            const calendar = await Calendar.findOne({ where: { uuid, ownerUuid: owner } });
++            if (!calendar) return deny();
++        }
++        next();
++    } catch (error) { next(error); }
++};
+--- a/routes/api/v1/calendar/routes.js
++++ b/routes/api/v1/calendar/routes.js
+@@ -4,16 +4,17 @@
+ const auth = require("../../../../middleware/auth");
+ 
+ const controller = require("./controller");
++const ownerBoundary = require("../../../../middleware/calendar-owner-boundary");
+ 
+-router.post("/", [auth], controller.createOrUpdate);
+-router.post("/share", [auth], controller.share);
+-router.post("/unshare", [auth], controller.unshare);
+-router.get("/access/u/:userUuid/v/:visibility", [auth], controller.access);
+-router.get("/resolve/:uuid/u/:userUuid", [auth], controller.resolveAccess);
+-router.get("/resolve/:uuid", [auth], controller.resolve);
+-router.get("/o/k/:key/v/:visibility", [auth], controller.get);
+-router.get("/v/:visibility", [auth], controller.get);
+-router.get("/i/:uuid", [auth], controller.one);
+-router.delete("/i/:uuid", [auth], controller.delete);
++router.post("/", [auth, ownerBoundary], controller.createOrUpdate);
++router.post("/share", [auth, ownerBoundary], controller.share);
++router.post("/unshare", [auth, ownerBoundary], controller.unshare);
++router.get("/access/u/:userUuid/v/:visibility", [auth, ownerBoundary], controller.access);
++router.get("/resolve/:uuid/u/:userUuid", [auth, ownerBoundary], controller.resolveAccess);
++router.get("/resolve/:uuid", [auth, ownerBoundary], controller.resolve);
++router.get("/o/k/:key/v/:visibility", [auth, ownerBoundary], controller.get);
++router.get("/v/:visibility", [auth, ownerBoundary], controller.get);
++router.get("/i/:uuid", [auth, ownerBoundary], controller.one);
++router.delete("/i/:uuid", [auth, ownerBoundary], controller.delete);
+ 
+ module.exports = router;
+--- a/routes/api/v1/event/routes.js
++++ b/routes/api/v1/event/routes.js
+@@ -4,15 +4,16 @@
+ const auth = require("../../../../middleware/auth");
+ 
+ const controller = require("./controller");
++const ownerBoundary = require("../../../../middleware/calendar-owner-boundary");
+ 
+-router.post("/", [auth], controller.createOrUpdate);
+-router.post("/invite", [auth], controller.invite);
+-router.get("/o/k/:key/v/:visibility", [auth], controller.get);
+-router.get("/i/:uuid", [auth], controller.get);
+-router.get("/history/c/:calendar", [auth], controller.get);
+-router.get("/s/:startAt/e/:endAt/k/:key/v/:visibility", [auth], controller.get);
+-router.get("/s/:startAt/e/:endAt/c/:calendar", [auth], controller.get);
+-router.delete("/i/:uuid/k/:key", [auth], controller.delete);
+-router.delete("/i/:uuid", [auth], controller.delete);
++router.post("/", [auth, ownerBoundary], controller.createOrUpdate);
++router.post("/invite", [auth, ownerBoundary], controller.invite);
++router.get("/o/k/:key/v/:visibility", [auth, ownerBoundary], controller.get);
++router.get("/i/:uuid", [auth, ownerBoundary], controller.get);
++router.get("/history/c/:calendar", [auth, ownerBoundary], controller.get);
++router.get("/s/:startAt/e/:endAt/k/:key/v/:visibility", [auth, ownerBoundary], controller.get);
++router.get("/s/:startAt/e/:endAt/c/:calendar", [auth, ownerBoundary], controller.get);
++router.delete("/i/:uuid/k/:key", [auth, ownerBoundary], controller.delete);
++router.delete("/i/:uuid", [auth, ownerBoundary], controller.delete);
+ 
+ module.exports = router;
