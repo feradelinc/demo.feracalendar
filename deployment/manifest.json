@@ -1,0 +1,12 @@
+{
+  "host": "54.156.64.47",
+  "domain": "calendar.deweyscrewem.com",
+  "remoteRoot": "/opt/feracal-studio",
+  "runtimeUser": "feracal-demo",
+  "service": "feracal-studio.service",
+  "listen": "127.0.0.1:4179",
+  "upstreams": ["https://api.auth.feradel.com", "https://api.calendar.feradel.com", "https://caldav.feradel.com"],
+  "instanceSelection": "Each user enters their authorized instance UUID on the login screen",
+  "authorization": "User authorized calendar.deweyscrewem.com and all Calendar corrections on 2026-10-11",
+  "scope": "Dedicated Studio service and vhost on existing web server; no Matters API configuration changes"
+}

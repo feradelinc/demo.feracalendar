@@ -33,6 +33,7 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
     instance: process.env.INSTANCE_UUID || "",
     email: process.env.DEMO_EMAIL || "",
     allowed: (process.env.ALLOWED_API_URLS || "").split(",").filter(Boolean),
+    publicOrigin: process.env.PUBLIC_ORIGIN || "",
   };
   const approved = new Set((config.allowed || []).map(safeBase));
   const bases = {};
@@ -55,6 +56,11 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
   const sessions = new Map(),
     app = express();
   app.disable("x-powered-by");
+  const publicOrigin = config.publicOrigin ? safeBase(config.publicOrigin) : "";
+  if (publicOrigin && new URL(publicOrigin).protocol !== "https:")
+    throw fail("PUBLIC_ORIGIN requires HTTPS");
+  if (publicOrigin) app.set("trust proxy", "loopback");
+  const clients = new Map();
   const lifetime = 60 * 60 * 1000;
   app.use((req, res, next) => {
     res.set({
@@ -66,10 +72,10 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
     });
     if (req.path.startsWith("/demo/")) {
       const host = req.headers.host || "";
-      if (!/^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/.test(host))
+      if (publicOrigin ? host !== new URL(publicOrigin).host || !req.secure : !/^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/.test(host))
         return res
           .status(403)
-          .json({ message: "Access through loopback only" });
+          .json({ message: "Unapproved application origin" });
       if (
         req.headers.origin &&
         req.headers.origin !== `${req.protocol}://${host}`
@@ -81,6 +87,20 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
         return res
           .status(403)
           .json({ message: "Missing same-origin request protection" });
+      if (publicOrigin) {
+        if (req.method !== "GET" && req.headers.origin !== publicOrigin)
+          return res.status(403).json({ message: "Hosted mutations require the configured origin" });
+        const key = req.ip;
+        let client = clients.get(key);
+        if (!client || client.until <= now()) {
+          if (!client && clients.size >= 5000)
+            return res.status(503).json({ message: "Demo capacity reached; retry shortly" });
+          client = { until: now() + 60000, requests: 0, logins: 0 };
+          clients.set(key, client);
+        }
+        if (++client.requests > 240 || req.path === "/demo/login" && ++client.logins > 10)
+          return res.set("Retry-After", "60").status(429).json({ message: "Request limit reached; retry shortly" });
+      }
     }
     const id = /(?:^|;\s*)feracal_session=([^;]+)/.exec(
       req.headers.cookie || "",
@@ -99,6 +119,7 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
   app.use(express.json({ limit: "2mb" }));
   function establish(req, res) {
     if (req.session) return req.session;
+    if (sessions.size >= 500) throw fail("Demo session capacity reached; retry shortly", 503);
     const id = crypto.randomBytes(32).toString("hex");
     const s = {
       last: now(),
@@ -690,6 +711,8 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
       });
   });
   const timer = setInterval(() => {
+    for (const [ip, client] of clients)
+      if (client.until <= now()) clients.delete(ip);
     for (const [id, s] of sessions)
       if (s.deadline <= now() || s.last + lifetime <= now())
         sessions.delete(id);
@@ -698,6 +721,7 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
   app.locals.close = () => {
     clearInterval(timer);
     sessions.clear();
+    clients.clear();
   };
   return app;
 }

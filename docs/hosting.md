@@ -1,0 +1,13 @@
+# Hosted Studio
+
+The authorized URL is https://calendar.deweyscrewem.com. The demo runs on the existing Dewey Screwem web server at `54.156.64.47`, separately from the managed API fleet. Deployment files are in `deployment/`. Source and production assets live in immutable directories under `/opt/feracal-studio/releases/`, selected by `/opt/feracal-studio/current`.
+
+The dedicated `feracal-demo` user runs a hardened systemd service on loopback port 4179. Nginx terminates HTTPS and overwrites forwarded protocol/client headers. `PUBLIC_ORIGIN` allows only the configured HTTPS host for demo API calls. Cross-origin requests and hosted mutations without an exact Origin are denied. Cookies are Secure, HttpOnly and SameSite Strict. Sessions expire after one hour, are kept only in process memory, and are lost on restart. Login is limited to ten requests per client per minute; total demo requests are limited to 240 per minute. Session and client maps have capacity bounds.
+
+Production upstreams are explicitly allowlisted Auth, Calendar and CalDAV origins. There is no shared account, embedded password, API key or default tenant. Users supply their own authorized instance UUID and credentials; live smoke remains disabled by default. Matters destinations remain prohibited by the proxy.
+
+Build with `npm ci` and `npm run build`, upload a source archive with `dist/` and the lockfile, then run `npm ci --omit=dev` within the new release directory. Install `deployment/production.env` at `/etc/feracal-studio/production.env` with root ownership, group `feracal-demo`, and mode 0640. Install the systemd unit, switch `current`, and restart only `feracal-studio.service`. Validate `/`, `/demo/config`, unauthenticated `/demo/session`, rejection of foreign Origin and HTTP forwarded protocol, and upstream health.
+
+The `calendar` DNS A record points to the web server. A dedicated Let's Encrypt certificate uses webroot `/var/lib/feracal-acme`. Validate Nginx before reloading and preserve a vhost backup. Renewal reloads Nginx after a successful certificate renewal. Rollback selects the previous release symlink and restarts this service; it does not restart API services or change the API fleet.
+
+Backend correction status and actual live verification are recorded separately from the original pinned-source audit. Historical review patches remain evidence for that audit; do not apply all of them over a newer backend that already contains stronger owner guards and atomic conditional ETags.
