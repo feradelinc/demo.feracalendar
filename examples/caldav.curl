@@ -1,0 +1,9 @@
+# curl prompts for password; it is never embedded in the URL or example.
+curl --request PROPFIND "$CALDAV_API_URL/caldav/instance/$INSTANCE_UUID/" \
+  --user "$CALDAV_USERNAME" --header 'Depth: 1' --header 'Content-Type: application/xml' \
+  --data-binary '<d:propfind xmlns:d="DAV:"><d:allprop/></d:propfind>'
+
+# Conditional edit: use the ETag captured from GET.
+curl --request PUT "$CALDAV_API_URL/caldav/calendars/$CALENDAR_UUID/$EVENT_UUID.ics" \
+  --user "$CALDAV_USERNAME" --header "If-Match: $CAPTURED_ETAG" \
+  --header 'Content-Type: text/calendar' --data-binary '@event.ics'

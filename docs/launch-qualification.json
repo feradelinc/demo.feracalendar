@@ -1,0 +1,24 @@
+{
+  "verifiedAt": "2026-10-11T20:54:36.509Z",
+  "upstreamCalls": 0,
+  "checks": [
+    {
+      "mode": "development",
+      "pageStatus": 200,
+      "apiMode": "live",
+      "auth": "http://localhost:10443",
+      "calendar": "http://localhost:11400",
+      "caldav": "http://localhost:11410",
+      "authenticated": false
+    },
+    {
+      "mode": "built local",
+      "pageStatus": 200,
+      "apiMode": "live",
+      "auth": "http://localhost:10443",
+      "calendar": "http://localhost:11400",
+      "caldav": "http://localhost:11410",
+      "authenticated": false
+    }
+  ]
+}

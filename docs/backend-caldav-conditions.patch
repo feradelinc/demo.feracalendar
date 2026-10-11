@@ -1,0 +1,33 @@
+--- a/src/caldav/controller.js
++++ b/src/caldav/controller.js
+@@ -110,6 +110,7 @@
+     });
+ 
+     if (!event?.uuid) throw new HttpError(404, "Event not found");
++    if (event.calendar?.uuid !== req.params.calendarUuid && event.calendarUuid !== req.params.calendarUuid) throw new HttpError(403, "Event does not belong to requested calendar");
+ 
+     res.set("ETag", eventEtag(event));
+     res.type("text/calendar").send(buildICSFromEvents([event]));
+@@ -137,11 +138,12 @@
+       eventUuid,
+     }).catch((error) => {
+       if (error.status === 404 || error.response?.status === 404) return null;
+-      return null;
++      throw error;
+     });
+ 
+     const ifMatch = req.headers["if-match"];
+-    if (ifMatch && existing?.uuid && ifMatch !== eventEtag(existing)) {
++    if (existing?.uuid && existing.calendar?.uuid !== req.params.calendarUuid && existing.calendarUuid !== req.params.calendarUuid) throw new HttpError(403, "Event does not belong to requested calendar");
++    if (ifMatch && (!existing?.uuid || ifMatch !== eventEtag(existing))) {
+       throw new HttpError(412, "Event ETag does not match");
+     }
+ 
+@@ -174,6 +176,7 @@
+     });
+ 
+     if (!existing?.uuid) throw new HttpError(404, "Event not found");
++    if (existing.calendar?.uuid !== req.params.calendarUuid && existing.calendarUuid !== req.params.calendarUuid) throw new HttpError(403, "Event does not belong to requested calendar");
+ 
+     const ifMatch = req.headers["if-match"];
+     if (ifMatch && ifMatch !== eventEtag(existing)) {

@@ -1,0 +1,4 @@
+# Use your own in-memory/environment token; do not commit credentials.
+curl --request GET "$CALENDAR_API_URL/api/v1/calendars/access/u/$FERA_USER_UUID/v/15" \
+  --header "instance: $INSTANCE_UUID" \
+  --header "x-auth-token: $FERA_AUTH_TOKEN"

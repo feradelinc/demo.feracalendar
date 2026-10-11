@@ -147,3 +147,13 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# FeraCalendar Studio local runtime and qualification output
+.env
+.env.*
+!.env.example
+dist/
+test-results/
+playwright-report/
+output/
+*.log

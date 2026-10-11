@@ -1,0 +1,35 @@
+--- a/routes/api/v1/person/service.js
++++ b/routes/api/v1/person/service.js
+@@ -6,7 +6,7 @@
+ const { record: recordAction, permitted: checkPermission } = require("../../../../support/service");
+ const { isGuid } = require("../../../../support/string");
+ 
+-const { VIS, ACTION_UPDATE, PERMISSION_EDIT } = require("./constants");
++const { VIS, ACTION_UPDATE, ACTION_VIEW, PERMISSION_EDIT, PERMISSION_VIEW } = require("./constants");
+ 
+ const ownerUuidOf = (x) => (x?.uuid ?? x);
+ const calendarNaturalKey = (calendar) => [
+@@ -220,3 +220,23 @@
+     await recordAction(req, ACTION_UPDATE, person?.uuid ?? null);
+     return result;
+ };
++
++// Restore the handler registered by person/controller.js for key and availability reads.
++exports.get = async (req) => {
++    await checkPermission(req, PERMISSION_VIEW);
++    const owner = ownerUuidOf(req.instance);
++    const { key, startAt: starting, endAt: ending } = req.params;
++    if (key) {
++        const person = await Person.byKey({ owner, key });
++        if (!person) return { success: false, error: { message: "Person not found" } };
++        await recordAction(req, ACTION_VIEW, person.uuid);
++        return { ...person.dataValues, success: true };
++    }
++    const start = new Date(starting), end = new Date(ending);
++    if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end <= start) {
++        throw Object.assign(new Error("Invalid availability interval"), { status: 400 });
++    }
++    const items = await Person.available({ owner, starting, ending });
++    await recordAction(req, ACTION_VIEW, null);
++    return { items, success: true };
++};

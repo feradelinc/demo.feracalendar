@@ -1,0 +1,13 @@
+--- a/src/caldav/controller.js
++++ b/src/caldav/controller.js
+@@ -155,7 +155,9 @@
+       throw new HttpError(400, result.error?.message || "Unable to save event", result.error);
+     }
+ 
+-    res.set("ETag", eventEtag(result));
++    // GET and PUT must hash the same canonical read representation.
++    const persisted = await calendarClient.getEvent({ principal: principal(req), eventUuid });
++    res.set("ETag", eventEtag(persisted));
+     res.status(existing?.uuid ? 204 : 201).end();
+   } catch (error) {
+     next(error);
