@@ -76,9 +76,6 @@ export async function walkthrough({
       person: ctx.avery.uuid,
     },
   });
-  await step("Resolve calendar", "GET", "/api/v1/calendars/resolve/{uuid}", {
-    params: { uuid: ctx.calendar.uuid },
-  });
   await step(
     "Retrieve calendar and owner",
     "GET",
@@ -96,8 +93,8 @@ export async function walkthrough({
   await step(
     "Inspect effective owner access",
     "GET",
-    "/api/v1/calendars/resolve/{uuid}/u/{userUuid}",
-    { params: { uuid: ctx.calendar.uuid, userUuid: session.user } },
+    "/api/v1/calendars/access/u/{userUuid}/v/{visibility}",
+    { params: { userUuid: session.user, visibility: 3 } },
   );
   await step(
     "List accessible calendars",
@@ -109,8 +106,8 @@ export async function walkthrough({
     await step(
       "Inspect Taylor user access",
       "GET",
-      "/api/v1/calendars/resolve/{uuid}/u/{userUuid}",
-      { params: { uuid: ctx.calendar.uuid, userUuid: sharedUser } },
+      "/api/v1/calendars/access/u/{userUuid}/v/{visibility}",
+      { params: { userUuid: sharedUser, visibility: 3 } },
     );
   else
     onStep({

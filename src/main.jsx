@@ -186,7 +186,7 @@ function App() {
                     Calendar Person records differ from FerAuth identities.
                     Visibility bits are list filters, not authorization. Writes
                     and cleanup are confined to records created in the current
-                    local session. Matters API is never a destination and is
+                    session. Matters API is never a destination and is
                     unchanged.
                   </Notice>
                   <h3>Privileged lifecycle operations ? documentation only</h3>
@@ -202,18 +202,20 @@ function App() {
                   <h3>Source-confirmed limitations</h3>
                   <ul>
                     <li>
-                      People GET/availability invokes a missing service function
-                      in the audited backend. Requests fail visibly until the
-                      backend correction is reviewed and applied.
+                      People lookup and availability require VIEW.PERSON.
+                      The original source audit found a missing getter; the
+                      hosted backend includes its correction.
                     </li>
                     <li>
-                      Several UUID operations lack consistent owner checks; the
-                      proxy adds owner verification and restricts writes.
+                      The proxy independently verifies calendar ownership and
+                      restricts writes to records created in this session.
                     </li>
                     <li>
                       Named permission checks are invoked by most services,
                       contrary to the general OpenAPI access description.
-                      Calendar resolve routes omit those checks.
+                      Current calendar resolve routes require VERIFY.CALDAV,
+                      a backend service permission. The guided walkthrough uses
+                      normal calendar access reads instead.
                     </li>
                     <li>
                       Recurrence is stored as metadata. History lists older
@@ -225,8 +227,9 @@ function App() {
                       event webhook is exposed.
                     </li>
                     <li>
-                      CalDAV sync returns a snapshot, TZID parsing is limited,
-                      and ETag checks are not atomic.
+                      CalDAV sync returns a snapshot and TZID parsing is limited.
+                      The hosted adapter preserves exclusive all-day end dates
+                      and forwards conditional ETags to the Calendar API.
                     </li>
                   </ul>
                   <p>

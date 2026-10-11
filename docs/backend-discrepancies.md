@@ -1,5 +1,7 @@
 # Backend discrepancies
 
+**Historical pinned-source audit.** The authorized hosting follow-up found newer production fixes and supplies the remaining corrections. See [current backend qualification](current-backend.md) for current source branches, actual release scope and verification. Do not apply these six historical patches as a batch over current production.
+
 Audited REST master `59a18b9df641779911b5e8febfe046730703fe92`, CalDAV main `94a1fa41058c790a3240a61c336e466d4716e057` and Auth main `ea76e6ea70dda3f28e278bba40da6e1cb82c453b`. Findings below are source-confirmed; no live account or database was used. The neighboring source checkouts and Matters API were not modified.
 
 | Finding                                    | Source evidence and effect                                                                                                                                                                                                                                                    | Studio handling / review patch                                                                                                                                                                                                                                                                                                                                                                       |
