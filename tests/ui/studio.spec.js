@@ -72,6 +72,8 @@ async function intercept(page) {
     } else if (endpoint === "caldav/disconnect") {
       session.caldavConnected = false;
       response = session;
+    } else if (endpoint === "retail/reminders?due=true") {
+      response = { items: [] };
     } else if (endpoint === "execute") {
       const op = operations.find((o) => o.id === p.operationId);
       const url =

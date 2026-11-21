@@ -16,8 +16,10 @@ import Explorer from "./components/Explorer.jsx";
 import CalDAVLab from "./components/CalDAVLab.jsx";
 import operations from "../shared/operations.json" with { type: "json" };
 import Icon from "./components/Icon.jsx";
+import RetailScheduling, { DueReminders, PublicBooking } from "./components/RetailScheduling.jsx";
 const pages = [
   ["Calendar", "calendar"],
+  ["Scheduling tools", "clock"],
   ["Getting started", "connect"],
   ["Full demonstration", "play"],
   ["Calendars & sharing", "share"],
@@ -154,6 +156,7 @@ function App() {
           </div>
         </header>
         <div className="content">
+          <DueReminders connected={session.authenticated} />
           {error && (
             <p className="error global-error" role="alert">
               {error}
@@ -164,6 +167,7 @@ function App() {
           ) : (
             <>
               {page === "Calendar" && <CalendarWorkspace {...props} />}{" "}
+              {page === "Scheduling tools" && <RetailScheduling {...props} />}
               {page === "Getting started" && <GettingStarted {...props} />}{" "}
               {page === "Full demonstration" && <Walkthrough {...props} />}{" "}
               {page === "Calendars & sharing" && (
@@ -263,4 +267,5 @@ function App() {
     </div>
   );
 }
-createRoot(document.getElementById("root")).render(<App />);
+const bookingRoute = /^\/book\/([a-zA-Z0-9_-]{32})\/?$/.exec(window.location.pathname);
+createRoot(document.getElementById("root")).render(bookingRoute ? <PublicBooking slug={bookingRoute[1]} /> : <App />);

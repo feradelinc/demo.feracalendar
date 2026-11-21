@@ -160,6 +160,35 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
     }),
   );
   app.get("/demo/session", (req, res) => res.json(status(req.session)));
+  app.all(/^\/demo\/retail\/(.*)$/, async (req, res) => {
+    const route = req.params[0];
+    const id = "[a-f0-9-]{36}";
+    const management = new Set([
+      "GET:capabilities", "GET:tasks", "POST:tasks", "GET:reminders", "POST:reminders",
+      "GET:booking-pages", "POST:booking-pages", "GET:automation-rules", "POST:automation-rules",
+    ]);
+    const owned = new RegExp(`^(PATCH|DELETE):(?:tasks|automation-rules)/${id}$|^POST:reminders/${id}/dismiss$|^PATCH:booking-pages/${id}$|^GET:booking-pages/${id}/reservations$`, "i");
+    const publicRoute = /^(GET:booking\/[a-z0-9_-]{32}|POST:booking\/[a-z0-9_-]{32}\/reservations)$/i;
+    const request = req.method + ":" + route;
+    const publicBooking = publicRoute.test(request);
+    if (!publicBooking && !management.has(request) && !owned.test(request)) {
+      return res.status(404).json({ message: "Calendar operation unavailable." });
+    }
+    const rest = req.session?.rest;
+    if (!publicBooking && !rest) return res.status(401).json({ message: "Connect your FeraCal account first." });
+    try {
+      const headers = publicBooking ? {} : { instance: rest.instance, "x-auth-token": rest.token };
+      const query = request === "GET:reminders" && req.query.due === "true" ? "?due=true" : "";
+      const response = await transmit("calendar", "/api/v1/retail/" + route + query, req.method,
+        req.method === "GET" ? headers : { ...headers, "content-type": "application/json" },
+        req.method === "GET" ? undefined : req.body);
+      const data = response.data;
+      if (response.status >= 400) return res.status(response.status).json({ message: data?.error?.message || "Calendar operation failed." });
+      return res.status(response.status).json(data);
+    } catch (error) {
+      return res.status(error.status || 502).json({ message: "Calendar is temporarily unavailable." });
+    }
+  });
   app.post("/demo/token", (req, res) =>
     req.session?.rest
       ? res.json({ token: req.session.rest.token })

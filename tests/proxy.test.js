@@ -50,6 +50,27 @@ const login = (call) =>
   });
 const execute = (call, method, route, payload = {}) =>
   call("execute", { operationId: restOp(method, route).id, ...payload });
+test("scheduling proxy preserves private credentials and keeps guest booking public", async () => {
+  const upstream = fixture();
+  const requests = [];
+  const slug = "12345678901234567890123456789012";
+  await harness(async call => {
+    assert.equal((await call("retail/tasks")).status, 401);
+    await login(call);
+    assert.equal((await call("retail/tasks", { title: "Synthetic task" })).status, 201);
+    assert.equal((await call("retail/internal/lifecycle")).status, 404);
+    assert.equal((await call(`retail/booking/${slug}/reservations`, { name: "Synthetic guest" })).status, 201);
+    assert.equal(requests.length, 2);
+    assert.equal(requests[0].headers.instance, instance);
+    assert.match(requests[0].headers["x-auth-token"], /^eyJ/);
+    assert.equal(requests[1].headers.instance, undefined);
+    assert.equal(requests[1].headers["x-auth-token"], undefined);
+  }, { fetchImpl: async (url, options) => {
+    if (!new URL(url).pathname.startsWith("/api/v1/retail/")) return upstream.fetchImpl(url, options);
+    requests.push(options);
+    return Response.json({ item: { success: true } }, { status: 201 });
+  } });
+});
 test("FerAuth email login, transmission headers, cookie, reveal, redaction and logout", () =>
   harness(async (call, f) => {
     const r = await login(call);

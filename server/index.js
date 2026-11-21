@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import path from "node:path";
 import { createApp } from "./app.js";
 if (process.env.DEMO_MODE && process.env.DEMO_MODE !== "live")
   throw Error(
@@ -7,7 +8,10 @@ if (process.env.DEMO_MODE && process.env.DEMO_MODE !== "live")
   );
 const app = createApp();
 let vite;
-if (process.argv.includes("--production")) app.use(express.static("dist"));
+if (process.argv.includes("--production")) {
+  app.use(express.static("dist"));
+  app.get(/^\/book\/[a-zA-Z0-9_-]{32}\/?$/, (_req, res) => res.sendFile(path.resolve("dist/index.html")));
+}
 else {
   vite = await (
     await import("vite")
