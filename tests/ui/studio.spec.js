@@ -153,6 +153,17 @@ async function login(page) {
   await page.getByRole("button", { name: "Authenticate", exact: true }).click();
   await expect(page.getByText("REST connected", { exact: true })).toBeVisible();
 }
+
+test("a Licensee workspace link prefills the authorized connection form", async ({ page }) => {
+  await intercept(page);
+  await page.goto("/?instance=" + instance);
+  await expect(page.getByRole("heading", { name: "Connect to FeraCal" })).toBeVisible();
+  await expect(page.getByLabel("Instance UUID")).toHaveValue(instance);
+  await page.getByLabel("Password", { exact: true }).fill("synthetic-test-password");
+  await page.getByRole("button", { name: "Authenticate", exact: true }).click();
+  await expect(page.getByText("REST connected", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Calendar", exact: true })).toHaveAttribute("aria-current", "page");
+});
 async function walk(page) {
   await page
     .getByRole("button", { name: "Full demonstration", exact: true })

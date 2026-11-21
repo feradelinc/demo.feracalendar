@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./style.css";
 import { local } from "./api.js";
+import { uuidPattern } from "../shared/data.js";
 import { Inspector, Json, Notice } from "./components/Common.jsx";
 import GettingStarted from "./components/GettingStarted.jsx";
 import CalendarWorkspace from "./components/CalendarWorkspace.jsx";
@@ -31,7 +32,11 @@ const pages = [
 ];
 
 function App() {
-  const [page, setPage] = useState("Calendar"),
+  const [requestedInstance] = useState(() => {
+    const instance = new URLSearchParams(window.location.search).get("instance");
+    return uuidPattern.test(instance || "") ? instance : "";
+  });
+  const [page, setPage] = useState(requestedInstance ? "Getting started" : "Calendar"),
     [config, setConfig] = useState(null),
     [session, setSession] = useState({ authenticated: false }),
     [context, setContext] = useState({}),
@@ -43,11 +48,14 @@ function App() {
   }
   useEffect(() => {
     Promise.all([local("config"), refresh()])
-      .then(([c]) => setConfig(c))
+      .then(([c]) => setConfig({ ...c, instance: requestedInstance || c.instance }))
       .catch((e) => setError(e.message));
     const timer = setInterval(() => refresh().catch(() => {}), 30000);
     return () => clearInterval(timer);
-  }, []);
+  }, [requestedInstance]);
+  useEffect(() => {
+    if (requestedInstance && session.authenticated && session.instance === requestedInstance) setPage("Calendar");
+  }, [requestedInstance, session.authenticated, session.instance]);
   async function run(fn) {
     setRunning(true);
     setError("");
