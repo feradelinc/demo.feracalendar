@@ -65,6 +65,7 @@ test("scheduling proxy preserves private credentials and keeps guest booking pub
     assert.match(requests[0].headers["x-auth-token"], /^eyJ/);
     assert.equal(requests[1].headers.instance, undefined);
     assert.equal(requests[1].headers["x-auth-token"], undefined);
+    assert.equal(requests[1].headers["content-type"], "application/json");
   }, { fetchImpl: async (url, options) => {
     if (!new URL(url).pathname.startsWith("/api/v1/retail/")) return upstream.fetchImpl(url, options);
     requests.push(options);
@@ -91,6 +92,7 @@ test("the explorer preserves all scheduling methods, paths, payloads and authent
       assert.equal(request.url.search, query.due ? "?due=true" : "");
       assert.equal(request.method, op.method);
       assert.equal(request.body, body === undefined ? undefined : JSON.stringify(body));
+      if (body !== undefined) assert.equal(request.headers["content-type"], "application/json");
       assert.equal(request.headers.instance, op.auth === "none" ? undefined : instance);
       assert.equal(Boolean(request.headers["x-auth-token"]), op.auth !== "none");
     }

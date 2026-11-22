@@ -166,6 +166,8 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
     if (op.auth !== "none" && !rest)
       throw fail("Connect your FeraCal account first.", 401);
     const headers = op.auth === "none" ? {} : restHeaders(session);
+    if (op.method !== "GET" && body !== undefined)
+      headers["content-type"] = "application/json";
     return transmit("calendar", route, op.method, headers,
       op.method === "GET" ? undefined : body, op.auth === "none" ? [] : [rest.token]);
   }

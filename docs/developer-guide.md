@@ -56,6 +56,8 @@ Tasks and reminders are available to active FeraCal members on all plans. Bookin
 
 Published booking details and reservations use the public slug and require no account credentials. Guests submit a booking request UUID and reuse it when retrying the same start time, name and email. Booking-page writes require future slots within 90 days. The explorer lists the exact paths and request fields.
 
+The **Publish booking page** form makes a new booking link available immediately. Unpublishing closes the link and preserves its reservations for the owner. If another guest takes a time before submission, the guest form refreshes available slots and keeps the name and email.
+
 ## CalDAV laboratory
 
 The protocol explorer preserves exact, trailing-slash and descendant registrations. Public `/.well-known/caldav` redirects to `/caldav/`. Use the Basic username `instanceUuid|email` at the root. The Studio derives it from the workspace UUID and CalDAV username. Use OPTIONS, HEAD, PROPFIND with Depth 0/1/infinity, and REPORT with calendar-query, calendar-multiget or sync-collection. An empty PROPFIND body requests all properties. The inspector shows the upstream XML, hrefs, privileges, ETags and sync token.

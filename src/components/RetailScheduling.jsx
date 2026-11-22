@@ -8,7 +8,8 @@ async function retail(route, method = "GET", fields) {
     body: fields === undefined ? undefined : JSON.stringify(fields),
   });
   const payload = await response.json();
-  if (!response.ok) throw Error(payload.message || "Calendar request failed.");
+  if (!response.ok)
+    throw Object.assign(new Error(payload.message || "Calendar request failed."), { status: response.status });
   return payload;
 }
 
@@ -84,7 +85,7 @@ function ReminderForm({ tasks, add }) {
 
 function BookingForm({ add, calendar }) {
   const [slots, setSlots] = useState([0]);
-  return <Form label="Create booking page" submit={async values => {
+  return <Form label="Publish booking page" submit={async values => {
     await add("booking-pages", { calendarUuid: calendar, title: values.get("title"),
       duration: Number(values.get("duration")), slots: values.getAll("slots").map(dateInput) });
     setSlots([0]);
@@ -195,9 +196,10 @@ export function PublicBooking({ slug }) {
   const [page, setPage] = useState(null), [error, setError] = useState("");
   const [confirmed, setConfirmed] = useState(null);
   const [attempt, setAttempt] = useState(null);
+  const resource = "booking/" + slug;
   useEffect(() => {
-    retail("booking/" + slug).then(result => setPage(result.item)).catch(cause => setError(cause.message));
-  }, [slug]);
+    retail(resource).then(result => setPage(result.item)).catch(cause => setError(cause.message));
+  }, [resource]);
   return <main className="content"><section className="panel">
     {error ? <p className="error" role="alert">{error}</p> : !page ? <p role="status">Loading booking page…</p> : <>
       <h1>{page.title}</h1>
@@ -209,8 +211,15 @@ export function PublicBooking({ slug }) {
             const snapshot = JSON.stringify(fields);
             const requestId = attempt?.snapshot === snapshot ? attempt.requestId : crypto.randomUUID();
             setAttempt({ snapshot, requestId });
-            const result = await retail("booking/" + slug + "/reservations", "POST", { ...fields, requestId });
-            setConfirmed(result.item);
+            try {
+              const result = await retail(resource + "/reservations", "POST", { ...fields, requestId });
+              setConfirmed(result.item);
+            } catch (cause) {
+              if (cause.status === 409) {
+                await retail(resource).then(result => setPage(result.item)).catch(() => {});
+              }
+              throw cause;
+            }
           }}>
             <Field label="Choose a time"><select name="slot" aria-label="Choose a time">{page.slots.map(slot => <option key={slot} value={slot}>{displayTime(slot)}</option>)}</select></Field>
             <Field name="name" label="Your name" autoComplete="name" required maxLength={120} />
