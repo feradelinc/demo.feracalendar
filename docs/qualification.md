@@ -1,5 +1,13 @@
 # Qualification report
 
+## November 2026 production API alignment
+
+Both Shared API nodes serve the REST and CalDAV revisions recorded in [coverage](coverage.md). The contract audit reconciles 49 public REST operations, 32 CalDAV registrations, the public discovery redirect, and four health checks.
+
+A disposable Free workspace verified production FerAuth, REST reads and writes, task and reminder operations, Free plan gates, anonymous booking lookup, and the guided Calendar walkthrough. CalDAV returned the expected discovery responses, UTC conversion for `America/New_York`, stable ETags on read-after-write, 412 on conflicting writes, and 403 `valid-sync-token` after a collection change. Scheduling proxy tests cover every route, including the paid-plan and public booking methods.
+
+## Original local implementation audit
+
 ## Scope
 
 Standalone local FeraCalendar Developer Studio implementation. No publicly accessible authenticated demo or production infrastructure was deployed. No Calendar, CalDAV, Auth or Matters backend checkout was modified. Matters API remained clean at `d267fa3e573fe7e7bfa3b1c9c43a81d8615f0492`.

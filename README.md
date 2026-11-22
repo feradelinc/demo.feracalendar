@@ -28,11 +28,11 @@ Verified source defaults are FerAuth `http://localhost:10443`, Calendar REST `ht
 - Interactive month, week, day and agenda calendar views backed by returned events, multiple-calendar selection, event editing and IANA-zone conversion.
 - Calendars and effective access, sharing and role changes, people, resources, participation, availability, recurrence metadata and event history.
 - A Northstar Consulting walkthrough that captures returned UUIDs, validates read-after-write and recurrence, and preserves created records until explicit scoped cleanup.
-- Searchable canonical explorers: **30 public REST operations**, **30 CalDAV registrations**, plus supplemental health operations. The 4 HMAC lifecycle operations are documented without controls; 34 deprecated aliases are excluded.
+- Searchable explorers for **49 public REST operations**, including 18 scheduling endpoints, and **32 CalDAV registrations**, plus CalDAV discovery and four health checks. Four HMAC lifecycle operations are documented for reference.
 - Separate Basic-auth CalDAV session, discovery and REPORT XML, ICS export/editing, ETags, conditional PUT/DELETE and conflict inspection.
 - Redacted inspectors, JavaScript/cURL generation and privacy-preserving trace downloads.
 
-Writes and cleanup are limited to records created in the current local session. Reading a preexisting calendar does not adopt it for mutation. Matters API is unchanged and outside the proxy's operating boundary.
+Calendar demonstration and CalDAV lab writes and cleanup are limited to records created in the current Studio session. Scheduling tools use the signed-in member's plan and permissions. Published booking links permit guests to read availability and reserve a time without signing in.
 
 ## Qualification
 
@@ -47,7 +47,7 @@ npm run smoke
 
 The Node suite exercises the actual proxy with explicit isolated upstream fixtures and selected real backend pure functions. Browser tests use explicit network interception. These tests establish local application behavior, not production API availability.
 
-The smoke command refuses unless `SMOKE_NONPRODUCTION=true`, `INSTANCE_UUID`, `SMOKE_EMAIL` and `SMOKE_PASSWORD` are configured for an expressly authorized nonproduction account. Separate CalDAV credentials require `SMOKE_CALDAV=true`. Cleanup defaults to false. Reports under ignored `output/` retain created UUIDs and sanitized step evidence. No live account was supplied or exercised during implementation.
+The local smoke command requires `SMOKE_NONPRODUCTION=true`, `INSTANCE_UUID`, `SMOKE_EMAIL` and `SMOKE_PASSWORD` for an expressly authorized nonproduction account. Separate CalDAV credentials require `SMOKE_CALDAV=true`. Cleanup defaults to false. Reports under ignored `output/` retain created UUIDs and sanitized step evidence.
 
 The original pinned-source audit found a missing people getter plus owner-boundary, ETag and all-day discrepancies. The current production branch already contains stronger scope and atomic ETag guards; the follow-up restores people reads and corrects all-day serialization while preserving signed Matters calls. Historical patches remain audit evidence, not a batch to apply over current production. Current resolver routes require `VERIFY.CALDAV`; the guided walkthrough uses ordinary calendar access reads instead. See [backend discrepancies](docs/backend-discrepancies.md) and [hosting configuration](docs/hosting.md).
 

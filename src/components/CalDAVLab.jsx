@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { local, saveText } from "../api.js";
 import { davOperation } from "../operations.js";
-import { sampleICS, xmlExamples, parseICS } from "../../shared/protocol.js";
+import { sampleICS, xmlExamples, parseICS, syncCollection } from "../../shared/protocol.js";
 import { scenario, today } from "../../shared/data.js";
 import Explorer from "./Explorer.jsx";
 import { Field, Notice, Json } from "./Common.jsx";
@@ -22,6 +22,7 @@ export default function CalDAVLab({ config, session, context, run, refresh }) {
     [oldETag, setOld] = useState(""),
     [error, setError] = useState(""),
     [template, setTemplate] = useState(""),
+    [syncToken, setSyncToken] = useState(""),
     [parsed, setParsed] = useState(null);
   async function connect(e) {
     e.preventDefault();
@@ -51,6 +52,7 @@ export default function CalDAVLab({ config, session, context, run, refresh }) {
         ...(method === "PUT" ? { body: ics } : {}),
       };
       if (tag) payload.headers = { "If-Match": tag };
+      if (method === "PUT" && !tag) payload.headers = { "If-None-Match": "*" };
       if (method === "DELETE") {
         if (
           !confirm(
@@ -75,6 +77,10 @@ export default function CalDAVLab({ config, session, context, run, refresh }) {
       if (method === "PUT") {
         setOld(etag);
         setETag(r.headers.etag || "");
+      }
+      if (method === "DELETE") {
+        setETag("");
+        setOld("");
       }
     } catch (e) {
       setError(e.message);
@@ -142,7 +148,7 @@ export default function CalDAVLab({ config, session, context, run, refresh }) {
                       ? xmlExamples.multiget(
                           "/caldav/calendars/" + calendar + "/" + file,
                         )
-                      : xmlExamples[k],
+                      : k === "sync" ? syncCollection(syncToken.trim()) : xmlExamples[k],
                   )
                 }
               >
@@ -156,6 +162,8 @@ export default function CalDAVLab({ config, session, context, run, refresh }) {
               </button>
             ))}
           </div>
+          <Field label="Sync token (optional)" value={syncToken}
+            onChange={(e) => setSyncToken(e.target.value)} />
           {template && (
             <>
               <Field label="XML recipe (copy into explorer)">
@@ -171,14 +179,15 @@ export default function CalDAVLab({ config, session, context, run, refresh }) {
             </>
           )}
           <Notice>
-            sync-collection currently returns a snapshot and a synthesized sync
-            token. It does not consume a prior token to provide incremental
-            changes or deletion tombstones.
+            Start with an empty token to fetch a snapshot. A current token
+            returns an empty result. If the server returns 403 with
+            valid-sync-token, clear the token and fetch a fresh snapshot.
           </Notice>
         </section>
       </div>
       <section className="panel">
         <h2>iCalendar & ETag conflict laboratory</h2>
+        <p>Use a calendar created in this Studio session where your CalDAV account has edit access.</p>
         <div className="form-grid">
           <Field
             label="Calendar UUID"
@@ -214,12 +223,13 @@ export default function CalDAVLab({ config, session, context, run, refresh }) {
               setFile(uuid + ".ics");
               setICS(sampleICS(uuid, scenario(today()).event));
               setETag("");
+              setOld("");
             }}
           >
             New fictional ICS resource
           </button>
           <button className="primary" onClick={() => execute("PUT", etag)}>
-            2 · PUT with current If-Match
+            {etag ? "2 · Update with If-Match" : "2 · Create with If-None-Match: *"}
           </button>
           <button disabled={!oldETag} onClick={() => execute("PUT", oldETag)}>
             3 · PUT with previous ETag
@@ -255,8 +265,7 @@ export default function CalDAVLab({ config, session, context, run, refresh }) {
         {parsed && <Json value={parsed} />}
         <p className="muted">
           The proxy validates UID/filename and normalizes line endings to CRLF.
-          Use UTC ICS timestamps; the current adapter ignores TZID for floating
-          date-times.
+          Use UTC timestamps or specify an IANA TZID for local date-times.
         </p>
       </section>
       {error && (

@@ -22,6 +22,7 @@ export default function Explorer({
   const op = ops.find((o) => o.id === id) || ops[0];
   useEffect(() => {
     const params = {};
+    const eventUuid = op.method === "PUT" ? crypto.randomUUID() : "";
     for (const p of op.parameters.filter((p) => p.in === "path"))
       params[p.name] =
         p.name === "visibility"
@@ -29,7 +30,9 @@ export default function Explorer({
           : p.name === "instance"
             ? session.instance || ""
             : p.name === "path"
-              ? ["GET", "PUT", "DELETE"].includes(op.method)
+              ? op.method === "PUT"
+                ? eventUuid + ".ics"
+                : ["GET", "DELETE"].includes(op.method)
                 ? ""
                 : "events"
               : p.name === "startAt"
@@ -40,15 +43,23 @@ export default function Explorer({
     setParams(params);
     setQuery({});
     setHeaders(
-      ["REPORT", "PROPFIND"].includes(op.method) ? { Depth: "0" } : {},
+      !op.discoveryRedirect && ["REPORT", "PROPFIND"].includes(op.method) ? { Depth: "0" } : {},
     );
     const s = scenario(
       today(),
       "America/New_York",
       session.prefix || "northstar-example",
     );
-    let value =
-      op.group === "people"
+    const nextDay = new Date(Date.now() + 86_400_000).toISOString();
+    const value =
+      op.retail
+        ? {
+            ...op.example,
+            ...(op.example.dueAt ? { dueAt: nextDay } : {}),
+            ...(op.example.startsAt ? { startsAt: nextDay, requestId: crypto.randomUUID() } : {}),
+            ...(op.example.slots ? { slots: [nextDay] } : {}),
+          }
+        : op.group === "people"
         ? s.avery
         : op.group === "resources"
           ? s.room
@@ -75,14 +86,14 @@ export default function Explorer({
       service === "caldav"
         ? op.method === "REPORT"
           ? xmlExamples.query
-          : op.method === "PROPFIND"
+          : op.method === "PROPFIND" && !op.discoveryRedirect
             ? xmlExamples.propfind
             : op.method === "PUT"
-              ? sampleICS(crypto.randomUUID(), s.event)
+              ? sampleICS(eventUuid, s.event)
               : ""
         : pretty(value),
     );
-  }, [id, session.prefix]);
+  }, [op.id, session.prefix, session.instance]);
   useEffect(() => {
     if (selection) setId(selection);
   }, [selection]);
@@ -96,7 +107,7 @@ export default function Explorer({
         params,
         query,
         headers,
-        ...(op.schema || ["PUT", "REPORT", "PROPFIND"].includes(op.method)
+        ...(op.schema || (!op.discoveryRedirect && ["PUT", "REPORT", "PROPFIND"].includes(op.method))
           ? { body: service === "rest" ? JSON.parse(body) : body }
           : {}),
       };
@@ -105,7 +116,7 @@ export default function Explorer({
           params.uuid || params.key || params.path || payload.body?.calendar;
         if (
           !window.confirm(
-            `Confirm ${op.method} for exact target ${target}. Only records created in this demo session may be changed.`,
+            `Confirm ${op.method} for exact target ${target}.`,
           )
         )
           return;
@@ -193,7 +204,7 @@ export default function Explorer({
           </div>
           {service === "caldav" && (
             <>
-              <Field label="Depth">
+              {!op.discoveryRedirect && ["PROPFIND", "REPORT"].includes(op.method) && <Field label="Depth">
                 <select
                   value={headers.Depth || "0"}
                   onChange={(e) =>
@@ -204,13 +215,23 @@ export default function Explorer({
                   <option>1</option>
                   <option>infinity</option>
                 </select>
-              </Field>
+              </Field>}
               {["PUT", "DELETE"].includes(op.method) && (
                 <Field
                   label="If-Match ETag"
                   value={headers["If-Match"] || ""}
                   onChange={(e) =>
                     setHeaders({ ...headers, "If-Match": e.target.value })
+                  }
+                />
+              )}
+              {op.method === "PUT" && (
+                <Field
+                  label="If-None-Match"
+                  placeholder="* creates a new event only"
+                  value={headers["If-None-Match"] || ""}
+                  onChange={(e) =>
+                    setHeaders({ ...headers, "If-None-Match": e.target.value })
                   }
                 />
               )}

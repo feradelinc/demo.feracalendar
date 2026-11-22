@@ -15649,6 +15649,444 @@
         "deprecated": true,
         "x-feradel-canonical-operation": "POST /api/v1/internal/lifecycle/license-product"
       }
+    },
+    "/api/v1/calendars/public": {
+      "get": {
+        "operationId": "calendar_get_calendarsPublic",
+        "summary": "List calendars with the public option",
+        "description": "Lists only the UUIDs of calendars with shared=true inside the resolved tenant partition. Requires VIEW.CALENDAR. Includes public person and global calendars without restricting results to the signed-in person, and does not expose events or membership data.",
+        "tags": [
+          "calendars"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "UUIDs of calendars with the saved public option enabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "items"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "uuid"
+                        ],
+                        "properties": {
+                          "uuid": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "example": {
+                  "success": true,
+                  "items": [
+                    {
+                      "uuid": "33333333-3333-4333-8333-333333333333"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "UUID, key, date range, fields, invite target, or command validation failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalError"
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "message": "The calendar operation could not be completed.",
+                    "category": "calendar",
+                    "number": 800000
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The x-auth-token or lifecycle HMAC is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalError"
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "message": "The calendar operation could not be completed.",
+                    "category": "calendar",
+                    "number": 800000
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Managed-product, owner, role, share/inviter, or lifecycle sender permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalError"
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "message": "The calendar operation could not be completed.",
+                    "category": "calendar",
+                    "number": 800000
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The owner-scoped calendar, event, person, resource, or invite target was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalError"
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "message": "The calendar operation could not be completed.",
+                    "category": "calendar",
+                    "number": 800000
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Persistence, invitation, lifecycle, or internal calendar processing failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalError"
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "message": "The calendar operation could not be completed.",
+                    "category": "calendar",
+                    "number": 800000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authToken": []
+          }
+        ],
+        "x-feradel-classification": "administrative",
+        "x-feradel-source": {
+          "route": "routes/api/v1/calendar/routes.js",
+          "handler": "controller.public",
+          "line": 16
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "label": "cURL",
+            "source": "curl --request GET --url 'https://api.calendar3.feradel.com/api/v1/calendars/public' --header 'x-auth-token: $FERA_CALENDAR_TOKEN' --header 'instance: 715c9ebb-0470-11f1-a928-0ed2cd1b87df'"
+          }
+        ],
+        "x-feradel-status-matrix": [
+          {
+            "status": 200,
+            "condition": "UUIDs of calendars with the saved public option enabled.",
+            "retryable": false,
+            "developerAction": "Continue with the returned calendar state."
+          },
+          {
+            "status": 400,
+            "condition": "UUID, key, date range, fields, invite target, or command validation failed.",
+            "retryable": false,
+            "developerAction": "Correct identity, scope, role, dates, invitation, resource, or dependency before retrying."
+          },
+          {
+            "status": 401,
+            "condition": "The x-auth-token or lifecycle HMAC is invalid.",
+            "retryable": false,
+            "developerAction": "Correct identity, scope, role, dates, invitation, resource, or dependency before retrying."
+          },
+          {
+            "status": 403,
+            "condition": "Managed-product, owner, role, share/inviter, or lifecycle sender permission is missing.",
+            "retryable": false,
+            "developerAction": "Correct identity, scope, role, dates, invitation, resource, or dependency before retrying."
+          },
+          {
+            "status": 404,
+            "condition": "The owner-scoped calendar, event, person, resource, or invite target was not found.",
+            "retryable": false,
+            "developerAction": "Correct identity, scope, role, dates, invitation, resource, or dependency before retrying."
+          },
+          {
+            "status": 500,
+            "condition": "Persistence, invitation, lifecycle, or internal calendar processing failed.",
+            "retryable": true,
+            "developerAction": "Correct identity, scope, role, dates, invitation, resource, or dependency before retrying."
+          }
+        ],
+        "x-feradel-access": {
+          "authentication": "authenticated",
+          "authorization": "Requires the authenticated caller to have VIEW.CALENDAR in the active product instance.",
+          "licensing": "The global managed-product middleware requires the resolved FeraCal product instance to exist in Active lifecycle state before this route executes.",
+          "instanceContext": "The instance header selects the FeraCal product instance. A trusted API-plane caller may replace it only with signed x-feradel-owner-instance, service, timestamp, and scope-signature headers.",
+          "ownership": "The resolved tenant owner UUID is mandatory and the query restricts Calendars.ownerUuid to that partition; only shared=true UUIDs are returned."
+        },
+        "x-feradel-related-operations": [
+          "calendar_post_calendars",
+          "calendar_post_calendarsShare",
+          "calendar_post_calendarsUnshare",
+          "calendar_get_calendarsAccessUUserUuidVVisibility}"
+        ],
+        "x-feradel-webhook-events": []
+      }
+    },
+    "/api/calendars/public": {
+      "get": {
+        "operationId": "calendar_get_calendarsPublic_alias",
+        "summary": "List calendars with the public option (deprecated compatibility path)",
+        "description": "Lists only the UUIDs of calendars with shared=true inside the resolved tenant partition. Requires VIEW.CALENDAR. Includes public person and global calendars without restricting results to the signed-in person, and does not expose events or membership data.",
+        "tags": [
+          "calendars"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "UUIDs of calendars with the saved public option enabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "items"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "uuid"
+                        ],
+                        "properties": {
+                          "uuid": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "example": {
+                  "success": true,
+                  "items": [
+                    {
+                      "uuid": "33333333-3333-4333-8333-333333333333"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "UUID, key, date range, fields, invite target, or command validation failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalError"
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "message": "The calendar operation could not be completed.",
+                    "category": "calendar",
+                    "number": 800000
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The x-auth-token or lifecycle HMAC is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalError"
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "message": "The calendar operation could not be completed.",
+                    "category": "calendar",
+                    "number": 800000
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Managed-product, owner, role, share/inviter, or lifecycle sender permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalError"
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "message": "The calendar operation could not be completed.",
+                    "category": "calendar",
+                    "number": 800000
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The owner-scoped calendar, event, person, resource, or invite target was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalError"
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "message": "The calendar operation could not be completed.",
+                    "category": "calendar",
+                    "number": 800000
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Persistence, invitation, lifecycle, or internal calendar processing failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalError"
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "message": "The calendar operation could not be completed.",
+                    "category": "calendar",
+                    "number": 800000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authToken": []
+          }
+        ],
+        "x-feradel-classification": "administrative",
+        "x-feradel-source": {
+          "route": "routes/api/v1/calendar/routes.js",
+          "handler": "controller.public",
+          "line": 16
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "label": "cURL",
+            "source": "curl --request GET --url 'https://api.calendar3.feradel.com/api/calendars/public' --header 'x-auth-token: $FERA_CALENDAR_TOKEN' --header 'instance: 715c9ebb-0470-11f1-a928-0ed2cd1b87df'"
+          }
+        ],
+        "x-feradel-status-matrix": [
+          {
+            "status": 200,
+            "condition": "UUIDs of calendars with the saved public option enabled.",
+            "retryable": false,
+            "developerAction": "Continue with the returned calendar state."
+          },
+          {
+            "status": 400,
+            "condition": "UUID, key, date range, fields, invite target, or command validation failed.",
+            "retryable": false,
+            "developerAction": "Correct identity, scope, role, dates, invitation, resource, or dependency before retrying."
+          },
+          {
+            "status": 401,
+            "condition": "The x-auth-token or lifecycle HMAC is invalid.",
+            "retryable": false,
+            "developerAction": "Correct identity, scope, role, dates, invitation, resource, or dependency before retrying."
+          },
+          {
+            "status": 403,
+            "condition": "Managed-product, owner, role, share/inviter, or lifecycle sender permission is missing.",
+            "retryable": false,
+            "developerAction": "Correct identity, scope, role, dates, invitation, resource, or dependency before retrying."
+          },
+          {
+            "status": 404,
+            "condition": "The owner-scoped calendar, event, person, resource, or invite target was not found.",
+            "retryable": false,
+            "developerAction": "Correct identity, scope, role, dates, invitation, resource, or dependency before retrying."
+          },
+          {
+            "status": 500,
+            "condition": "Persistence, invitation, lifecycle, or internal calendar processing failed.",
+            "retryable": true,
+            "developerAction": "Correct identity, scope, role, dates, invitation, resource, or dependency before retrying."
+          }
+        ],
+        "x-feradel-access": {
+          "authentication": "authenticated",
+          "authorization": "Requires the authenticated caller to have VIEW.CALENDAR in the active product instance.",
+          "licensing": "The global managed-product middleware requires the resolved FeraCal product instance to exist in Active lifecycle state before this route executes.",
+          "instanceContext": "The instance header selects the FeraCal product instance. A trusted API-plane caller may replace it only with signed x-feradel-owner-instance, service, timestamp, and scope-signature headers.",
+          "ownership": "The resolved tenant owner UUID is mandatory and the query restricts Calendars.ownerUuid to that partition; only shared=true UUIDs are returned."
+        },
+        "x-feradel-related-operations": [
+          "calendar_post_calendars",
+          "calendar_post_calendarsShare",
+          "calendar_post_calendarsUnshare",
+          "calendar_get_calendarsAccessUUserUuidVVisibility}"
+        ],
+        "x-feradel-webhook-events": [],
+        "deprecated": true,
+        "x-feradel-canonical-operation": "GET /api/v1/calendars/public"
+      }
     }
   },
   "externalDocs": {

@@ -1,18 +1,21 @@
 {
-  "restPublic": 30,
+  "restPublic": 49,
+  "retailOperations": 18,
   "restInternal": 4,
-  "deprecatedAliases": 34,
-  "caldavRegistrations": 30,
+  "restAdapterOnly": 2,
+  "deprecatedAliases": 35,
+  "caldavRegistrations": 32,
+  "caldavDiscoveryRedirects": 1,
   "supplementalHealth": 4,
   "evidence": {
     "rest": {
-      "commit": "59a18b9df641779911b5e8febfe046730703fe92",
-      "contractSha256": "e5bb5c404fa82377ead1441d33b45767fdfda6891867f8419ce2a9a789e5d508",
+      "commit": "da86cdf1c00a7e66abf53cb902fe5d727839fd54",
+      "contractSha256": "cef1680c1094f79170d3c29dd98b84efff2637158b1fef301b4bf37cf743fe43",
       "sourceReconciled": true
     },
     "caldav": {
-      "commit": "94a1fa41058c790a3240a61c336e466d4716e057",
-      "contractSha256": "b6e5fb3355bbe9a0571c51fb766e473c2630827a8f5b9395917f2e653d9b840a",
+      "commit": "b765a57ce429489b4ad6bb83e93c0adfdfa1ef69",
+      "contractSha256": "5763923fdc24994a522b79de84bb43779b75e950833dcb878dda23fe94a06fe7",
       "sourceReconciled": true
     }
   }

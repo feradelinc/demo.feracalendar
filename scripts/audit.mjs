@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
+import { retailOperations } from "../shared/retail-operations.js";
 const root = path.resolve(import.meta.dirname, "..");
 const sources = {
   rest:
@@ -99,6 +100,8 @@ function humanSummary(service, method, route, group) {
     return "Share calendar or change membership role";
   if (route.endsWith("/unshare")) return "Remove calendar sharing";
   if (route.endsWith("/invite")) return "Create or update event participation";
+  if (route === "/api/v1/calendars/public")
+    return "List public calendars in the authenticated workspace";
   if (method === "POST") return "Create or update " + noun;
   if (method === "DELETE")
     return (
@@ -137,7 +140,7 @@ for (const service of ["rest", "caldav"]) {
     online = fs.existsSync(source);
   if (online) {
     const current = read(path.join(source, "openapi/openapi.json"));
-    if (current !== read(file))
+    if (current.replaceAll("\r\n", "\n") !== read(file).replaceAll("\r\n", "\n"))
       throw Error(service + " source contract changed; refresh and re-audit");
   }
   const prior = fs.existsSync(path.join(root, "docs/inventory.json"))
@@ -291,7 +294,7 @@ for (const service of ["rest", "caldav"]) {
             : internal
               ? "Privileged lifecycle HMAC"
               : route.includes("/resolve/")
-                ? "JWT/product; source omits named permission checks"
+                ? "Service permission VERIFY.CALDAV"
                 : `${method === "GET" ? "VIEW" : "EDIT"}.${{ calendars: "CALENDAR", people: "PERSON", resources: "RESOURCE", events: "EVENT" }[group]}`;
       ops.push({
         id: o.operationId,
@@ -351,6 +354,32 @@ for (const service of ["rest", "caldav"]) {
       });
     }
 }
+const adapterOnly = new Set([
+  "post:/protocol-v1",
+  "delete:/protocol-v1/c/:calendar/i/:uuid/k/:key",
+]);
+if (fs.existsSync(sources.rest)) {
+  const name = "routes/api/v1/retail.js";
+  const expected = new Set(retailOperations.map(op =>
+    op.method.toLowerCase() + ":" + op.route.replace("/api/v1/retail", "").replace(/\{([^}]+)\}/g, ":$1")));
+  expectedRegistrations.set("rest:" + name, expected);
+  const mounts = read(path.join(sources.rest, "server.js"));
+  if (!mounts.includes('app.use("/api/v1/retail", require("./routes/api/v1/retail"))'))
+    throw Error("The deployed FeraCal scheduling mount changed");
+  const eventPath = "rest:routes/api/v1/event/routes.js";
+  for (const registration of adapterOnly) expectedRegistrations.get(eventPath).add(registration);
+}
+ops.push(...retailOperations);
+if (fs.existsSync(sources.caldav) &&
+    !read(path.join(sources.caldav, "src/app.js")).includes('app.all("/.well-known/caldav"'))
+  throw Error("The deployed CalDAV discovery redirect changed");
+ops.push({
+  id: "caldav-discovery-redirect", service: "caldav", method: "PROPFIND", route: "/.well-known/caldav",
+  group: "CalDAV", internal: false, health: false, supplemental: false, discoveryRedirect: true,
+  auth: "none", permission: "Public discovery", summary: "Find the CalDAV service URL",
+  parameters: [], schema: null, conditions: ["The server returns 301 to /caldav/. The Studio displays the redirect without following it."],
+  source: { route: "src/app.js", handler: "application discovery redirect" }, responses: ["301"], example: {},
+});
 for (const [key, expected] of expectedRegistrations) {
   const split = key.indexOf(":");
   const service = key.slice(0, split),
@@ -358,7 +387,7 @@ for (const [key, expected] of expectedRegistrations) {
   const actual = new Set(
     [
       ...read(path.join(sources[service], file)).matchAll(
-        /router\.(get|post|put|delete|head|options|propfind|report)\(\s*"([^"]+)"/g,
+        /router\.(get|post|patch|put|delete|head|options|propfind|report)\(\s*"([^"]+)"/g,
       ),
     ].map((m) => m[1] + ":" + m[2]),
   );
@@ -368,37 +397,22 @@ for (const [key, expected] of expectedRegistrations) {
   )
     throw Error("Undocumented/missing source registration in " + file);
 }
-const count = (f) => ops.filter(f).length;
-if (
-  count((o) => o.service === "rest" && !o.health && !o.internal) !== 30 ||
-  count((o) => o.internal) !== 4 ||
-  aliases.length !== 34 ||
-  count((o) => o.service === "caldav" && !o.supplemental) !== 30
-)
-  throw Error("Coverage count changed");
+const count = (predicate) => ops.filter(predicate).length;
+if (new Set(ops.map(op => op.id)).size !== ops.length) throw Error("Duplicate operation ID");
 const result = {
-  restPublic: 30,
-  restInternal: 4,
-  deprecatedAliases: 34,
-  caldavRegistrations: 30,
-  supplementalHealth: 4,
+  restPublic: count(op => op.service === "rest" && !op.internal && !op.health),
+  retailOperations: retailOperations.length,
+  restInternal: count(op => op.internal),
+  restAdapterOnly: adapterOnly.size,
+  deprecatedAliases: aliases.length,
+  caldavRegistrations: count(op => op.service === "caldav" && !op.supplemental && !op.discoveryRedirect),
+  caldavDiscoveryRedirects: count(op => op.discoveryRedirect),
+  supplementalHealth: count(op => op.supplemental),
   evidence,
 };
-if (process.argv.includes("--check")) {
-  if (
-    JSON.stringify(
-      JSON.parse(read(path.join(root, "shared/operations.json"))),
-    ) !== JSON.stringify(ops)
-  )
-    throw Error("Registry differs from audited contracts");
-} else
-  fs.writeFileSync(
-    path.join(root, "shared/operations.json"),
-    JSON.stringify(ops, null, 2) + "\n",
-  );
-fs.writeFileSync(
-  path.join(root, "docs/coverage.md"),
-  "# Audited operation coverage\n\n30 public REST operations, 4 documented lifecycle operations (no executable controls), 34 deprecated aliases excluded, 30 CalDAV registrations, and 4 supplemental liveness/readiness registrations. Implemented means executable support, not live qualification.\n\n" +
+const coverage =
+  "# Audited operation coverage\n\n" +
+    `${result.restPublic} public REST operations include ${result.retailOperations} scheduling operations audited from the deployed router. ${result.caldavRegistrations} CalDAV registrations, the discovery redirect, and ${result.supplementalHealth} supplemental health operations are available. The Studio excludes ${result.deprecatedAliases} deprecated aliases and keeps ${result.restInternal} lifecycle and ${result.restAdapterOnly} CalDAV adapter-only REST operations outside its executor.\n\n` +
     Object.entries(evidence)
       .map(
         ([k, v]) =>
@@ -412,10 +426,18 @@ fs.writeFileSync(
           `| ${o.service} | ${o.method} | ${o.route} | ${o.auth} | ${o.source.route} |`,
       )
       .join("\n") +
-    "\n",
-);
-fs.writeFileSync(
-  path.join(root, "docs/inventory.json"),
-  JSON.stringify(result, null, 2) + "\n",
-);
+    "\n";
+for (const [name, content] of [
+  ["shared/operations.json", JSON.stringify(ops, null, 2) + "\n"],
+  ["docs/coverage.md", coverage],
+  ["docs/inventory.json", JSON.stringify(result, null, 2) + "\n"],
+]) {
+  const file = path.join(root, name);
+  if (process.argv.includes("--check")) {
+    if (read(file).replaceAll("\r\n", "\n") !== content)
+      throw Error(name + " differs from audited contracts");
+  } else {
+    fs.writeFileSync(file, content);
+  }
+}
 console.log(JSON.stringify(result, null, 2));

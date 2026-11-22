@@ -1,4 +1,6 @@
-# Current backend qualification
+# October 2026 backend qualification
+
+See [audited operation coverage](coverage.md) for the current deployed contracts.
 
 The original contract inventory and review patches record REST master `59a18b9` and CalDAV main `94a1fa4`. Actual production on 2026-10-11 uses the accumulated `fix/preprod35-db-profile` source branches and release `v0.1.0-api-release.20261011.82`. This distinction was verified from both production nodes, not inferred from the old deployment manifests.
 

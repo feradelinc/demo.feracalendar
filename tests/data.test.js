@@ -24,13 +24,15 @@ test("canonical public/internal/alias/CalDAV/health counts and uniqueness", () =
   assert.equal(
     operations.filter((o) => o.service === "rest" && !o.internal && !o.health)
       .length,
-    30,
+    49,
   );
   assert.equal(operations.filter((o) => o.internal).length, 4);
   assert.equal(
-    operations.filter((o) => o.service === "caldav" && !o.supplemental).length,
-    30,
+    operations.filter((o) => o.service === "caldav" && !o.supplemental && !o.discoveryRedirect).length,
+    32,
   );
+  assert.equal(operations.filter((o) => o.retail).length, 18);
+  assert.equal(operations.filter((o) => o.discoveryRedirect).length, 1);
   assert.equal(operations.filter((o) => o.supplemental).length, 4);
   assert.equal(new Set(operations.map((o) => o.id)).size, operations.length);
   assert.ok(

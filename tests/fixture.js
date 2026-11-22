@@ -51,6 +51,8 @@ export function fixture() {
     if (route.startsWith("/health"))
       return json({ success: true, service: "fixture" });
     if (u.port === "11410") {
+      if (route === "/.well-known/caldav")
+        return new Response(null, { status: 301, headers: { location: "/caldav/" } });
       if (method === "OPTIONS")
         return new Response(null, {
           status: 204,
@@ -61,7 +63,7 @@ export function fixture() {
         });
       if (
         opt.headers.authorization !==
-        "Basic " + Buffer.from("dav-user:dav-pass").toString("base64")
+        "Basic " + Buffer.from(instance + "|dav-user:dav-pass").toString("base64")
       )
         return json({ message: "Invalid Basic credentials" }, 401);
       const match = route.match(/\/calendars\/([^/]+)\/([^/]+\.ics)$/),
@@ -85,6 +87,8 @@ export function fixture() {
         });
       }
       if (method === "PUT") {
+        if (existing && opt.headers["if-none-match"] === "*")
+          return json({ message: "Resource already exists" }, 412);
         if (
           existing &&
           opt.headers["if-match"] &&
@@ -173,13 +177,13 @@ export function fixture() {
         principalUserUuid: user,
       });
     }
-    if (route.includes("/access/"))
-      return json({
-        items: [...store.values()],
-        success: true,
-        person: crypto.randomUUID(),
-        userUuid: user,
-      });
+    if (route.includes("/access/")) {
+      const userUuid = route.split("/u/")[1]?.split("/")[0];
+      const person = [...records.people.values()].find(row => row.user === userUuid);
+      return person
+        ? json({ items: [...store.values()], success: true, person: person.uuid, personKey: person.ownerKey, userUuid })
+        : json({ success: false, error: { message: "Person not found" } }, 404);
+    }
     if (group === "events") {
       let items = [...store.values()];
       const id = route.split("/i/")[1];

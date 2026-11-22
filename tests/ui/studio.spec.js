@@ -89,7 +89,7 @@ async function intercept(page) {
             : {
                 authorization:
                   "Basic " +
-                  Buffer.from("dav-user:dav-pass").toString("base64"),
+                  Buffer.from(instance + "|dav-user:dav-pass").toString("base64"),
                 ...Object.fromEntries(
                   Object.entries(p.headers || {}).map(([k, v]) => [
                     k.toLowerCase(),
@@ -354,7 +354,7 @@ test("CalDAV Basic connect, XML recipes, ICS editor and real fixture ETag confli
     ),
   );
   await page
-    .getByRole("button", { name: "2 · PUT with current If-Match" })
+    .getByRole("button", { name: "2 · Update with If-Match" })
     .click();
   await expect(
     page.getByRole("button", { name: "3 · PUT with previous ETag" }),

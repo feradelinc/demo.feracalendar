@@ -71,6 +71,39 @@ test("scheduling proxy preserves private credentials and keeps guest booking pub
     return Response.json({ item: { success: true } }, { status: 201 });
   } });
 });
+test("the explorer preserves all scheduling methods, paths, payloads and authentication", async () => {
+  const upstream = fixture();
+  const sent = [];
+  const slug = "s".repeat(32);
+  const params = { uuid: user, slug };
+  await harness(async (call) => {
+    assert.equal((await call("execute", { operationId: "retail-tasks-list" })).status, 401);
+    await login(call);
+    for (const op of operations.filter((o) => o.retail)) {
+      const query = op.id === "retail-reminders-list" ? { due: "true" } : {};
+      const body = op.schema ? op.example : undefined;
+      const result = await call("execute", { operationId: op.id, params, query, body, confirmation: user });
+      assert.equal(result.status, 200, op.id);
+      assert.equal(result.data.status, 200, op.id);
+      const request = sent.at(-1);
+      const expectedPath = op.route.replace("{uuid}", user).replace("{slug}", slug);
+      assert.equal(request.url.pathname, expectedPath);
+      assert.equal(request.url.search, query.due ? "?due=true" : "");
+      assert.equal(request.method, op.method);
+      assert.equal(request.body, body === undefined ? undefined : JSON.stringify(body));
+      assert.equal(request.headers.instance, op.auth === "none" ? undefined : instance);
+      assert.equal(Boolean(request.headers["x-auth-token"]), op.auth !== "none");
+    }
+    assert.equal(sent.length, 18);
+  }, {
+    fetchImpl: async (url, options) => {
+      const parsed = new URL(url);
+      if (!parsed.pathname.startsWith("/api/v1/retail/")) return upstream.fetchImpl(url, options);
+      sent.push({ url: parsed, ...options });
+      return Response.json({ success: true });
+    },
+  });
+});
 test("FerAuth email login, transmission headers, cookie, reveal, redaction and logout", () =>
   harness(async (call, f) => {
     const r = await login(call);
@@ -296,6 +329,28 @@ test("guided walkthrough succeeds without the backend-only VERIFY.CALDAV resolve
     ? Response.json({ success: false, error: { message: "VERIFY.CALDAV required" } }, { status: 403 })
     : f.fetchImpl(url, options) });
 });
+test("walkthrough grants CalDAV access to the signed-in linked person without relinking them", () =>
+  harness(async (call, f) => {
+    const person = "33333333-3333-4333-8333-333333333333";
+    const original = { uuid: person, ownerKey: "existing", user, email: "signed-in@example.test" };
+    f.records.people.set(person, original);
+    await login(call);
+    await call("caldav/connect", { instance, username: "dav-user", password: "dav-pass" });
+    const session = (await call("session")).data;
+    const ctx = await walkthrough({
+      session, date: "2027-06-15", includeCalDAV: true,
+      execute: async (payload) => (await call("execute", payload)).data,
+    });
+    assert.equal(f.records.people.get(ctx.avery.uuid).user, undefined);
+    assert.deepEqual(f.records.people.get(person), original);
+    const shares = f.calls.filter(({ url }) => url.endsWith("/api/v1/calendars/share"));
+    assert.deepEqual(JSON.parse(shares.at(-1).body), {
+      calendar: ctx.calendar.uuid, person, inviter: ctx.avery.uuid, role: "editor",
+    });
+    assert.equal((await execute(call, "POST", "/api/v1/calendars/share", {
+      body: { calendar: ctx.calendar.uuid, person: instance, inviter: ctx.avery.uuid, role: "editor" },
+    })).status, 403);
+  }));
 test("owner verification refuses cross-tenant resolve and event query", () =>
   harness(async (call, f) => {
     await login(call);
@@ -324,6 +379,11 @@ test("owner verification refuses cross-tenant resolve and event query", () =>
   }));
 test("CalDAV credential success/failure, independent disconnect, XML and all registration variants", () =>
   harness(async (call, f) => {
+    const discovery = operations.find((o) => o.discoveryRedirect);
+    const publicRedirect = await call("execute", { operationId: discovery.id });
+    assert.equal(publicRedirect.data.status, 301);
+    assert.equal(publicRedirect.data.headers.location, "/caldav/");
+    assert.equal(f.calls.at(-1).headers.authorization, undefined);
     assert.equal(
       (
         await call("caldav/connect", {
@@ -341,6 +401,12 @@ test("CalDAV credential success/failure, independent disconnect, XML and all reg
     });
     assert.equal(r.data.status, 207);
     assert.ok(!JSON.stringify(r.data).includes("dav-pass"));
+    const root = operations.find((o) => o.method === "PROPFIND" && o.route === "/caldav/");
+    const empty = await call("execute", { operationId: root.id, headers: { Depth: "1" }, body: "" });
+    assert.equal(empty.data.status, 207);
+    assert.equal(f.calls.at(-1).body, undefined);
+    assert.equal(f.calls.at(-1).headers.authorization,
+      "Basic " + Buffer.from(instance + "|dav-user:dav-pass").toString("base64"));
     const uuid = "33333333-3333-4333-8333-333333333333";
     for (const op of operations.filter(
       (o) =>
@@ -417,6 +483,11 @@ test("real protocol proxy ETag flow, stale conflict, UID mismatch, conditional d
       201,
     );
     assert.ok(f.calls.at(-1).body.includes("\r\n"));
+    assert.equal(f.calls.at(-1).headers["if-none-match"], "*");
+    assert.equal((await dav("PUT", {
+      body: sampleICS(id, { ...event, title: "Create replay" }),
+      headers: { "If-None-Match": "*" },
+    })).data.status, 412);
     const get = await dav("GET"),
       etag = get.data.headers.etag;
     assert.equal(
@@ -453,7 +524,7 @@ test("real protocol proxy ETag flow, stale conflict, UID mismatch, conditional d
     );
   }));
 
-test("every public REST operation transmits its canonical method and path with scoped arguments", () =>
+test("every core REST operation transmits its canonical method and path with scoped arguments", () =>
   harness(async (call, f) => {
     await login(call);
     const session = (await call("session")).data;
@@ -464,7 +535,7 @@ test("every public REST operation transmits its canonical method and path with s
     });
     const covered = new Set();
     const ops = operations
-      .filter((o) => o.service === "rest" && !o.health && !o.internal)
+      .filter((o) => o.service === "rest" && !o.health && !o.internal && !o.retail)
       .sort((a, b) => (a.method === "DELETE") - (b.method === "DELETE"));
     for (const op of ops) {
       let body,
@@ -581,7 +652,7 @@ test("every public REST operation transmits its canonical method and path with s
       assert.ok(r.data.request.url.startsWith(config.calendar + "/api/v1/"));
       covered.add(op.id);
     }
-    assert.equal(covered.size, 30);
+    assert.equal(covered.size, 31);
   }));
 
 test("Matters destinations are blocked even if a service base is misconfigured", () => {

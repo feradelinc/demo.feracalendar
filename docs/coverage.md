@@ -1,10 +1,10 @@
 # Audited operation coverage
 
-30 public REST operations, 4 documented lifecycle operations (no executable controls), 34 deprecated aliases excluded, 30 CalDAV registrations, and 4 supplemental liveness/readiness registrations. Implemented means executable support, not live qualification.
+49 public REST operations include 18 scheduling operations audited from the deployed router. 32 CalDAV registrations, the discovery redirect, and 4 supplemental health operations are available. The Studio excludes 35 deprecated aliases and keeps 4 lifecycle and 2 CalDAV adapter-only REST operations outside its executor.
 
-rest: source commit 59a18b9df641779911b5e8febfe046730703fe92; contract SHA256 e5bb5c404fa82377ead1441d33b45767fdfda6891867f8419ce2a9a789e5d508; source reconciled true.
+rest: source commit da86cdf1c00a7e66abf53cb902fe5d727839fd54; contract SHA256 cef1680c1094f79170d3c29dd98b84efff2637158b1fef301b4bf37cf743fe43; source reconciled true.
 
-caldav: source commit 94a1fa41058c790a3240a61c336e466d4716e057; contract SHA256 b6e5fb3355bbe9a0571c51fb766e473c2630827a8f5b9395917f2e653d9b840a; source reconciled true.
+caldav: source commit b765a57ce429489b4ad6bb83e93c0adfdfa1ef69; contract SHA256 5763923fdc24994a522b79de84bb43779b75e950833dcb878dda23fe94a06fe7; source reconciled true.
 
 | Service | Method | Route | Auth | Source |
 |---|---|---|---|---|
@@ -45,6 +45,7 @@ caldav: source commit 94a1fa41058c790a3240a61c336e466d4716e057; contract SHA256 
 | rest | POST | /api/v1/internal/settings/license-product | Privileged HMAC | routes/api/v1/internal/lifecycle.js |
 | rest | POST | /api/v1/internal/deprovisioning/license-product | Privileged HMAC | routes/api/v1/internal/lifecycle.js |
 | rest | POST | /api/v1/internal/lifecycle/license-product | Privileged HMAC | routes/api/v1/internal/lifecycle.js |
+| rest | GET | /api/v1/calendars/public | x-auth-token + instance | routes/api/v1/calendar/routes.js |
 | caldav | GET | /health/live | none | support/active-active.js |
 | caldav | GET | /health/ready | none | support/active-active.js |
 | caldav | GET | /health | none | src/app.js |
@@ -77,3 +78,24 @@ caldav: source commit 94a1fa41058c790a3240a61c336e466d4716e057; contract SHA256 
 | caldav | GET | /caldav/calendars/{calendarUuid}/{path} | HTTP Basic | src/caldav/router.js |
 | caldav | PUT | /caldav/calendars/{calendarUuid}/{path} | HTTP Basic | src/caldav/router.js |
 | caldav | DELETE | /caldav/calendars/{calendarUuid}/{path} | HTTP Basic | src/caldav/router.js |
+| caldav | HEAD | /caldav/ | HTTP Basic | src/caldav/router.js |
+| caldav | PROPFIND | /caldav/ | HTTP Basic | src/caldav/router.js |
+| rest | GET | /api/v1/retail/capabilities | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | GET | /api/v1/retail/tasks | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | POST | /api/v1/retail/tasks | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | PATCH | /api/v1/retail/tasks/{uuid} | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | DELETE | /api/v1/retail/tasks/{uuid} | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | GET | /api/v1/retail/reminders | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | POST | /api/v1/retail/reminders | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | POST | /api/v1/retail/reminders/{uuid}/dismiss | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | GET | /api/v1/retail/booking-pages | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | POST | /api/v1/retail/booking-pages | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | PATCH | /api/v1/retail/booking-pages/{uuid} | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | GET | /api/v1/retail/booking-pages/{uuid}/reservations | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | GET | /api/v1/retail/automation-rules | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | POST | /api/v1/retail/automation-rules | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | PATCH | /api/v1/retail/automation-rules/{uuid} | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | DELETE | /api/v1/retail/automation-rules/{uuid} | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | GET | /api/v1/retail/booking/{slug} | none | routes/api/v1/retail.js |
+| rest | POST | /api/v1/retail/booking/{slug}/reservations | none | routes/api/v1/retail.js |
+| caldav | PROPFIND | /.well-known/caldav | none | src/app.js |
