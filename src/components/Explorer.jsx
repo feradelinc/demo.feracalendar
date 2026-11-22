@@ -20,6 +20,7 @@ export default function Explorer({
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const op = ops.find((o) => o.id === id) || ops[0];
+  const hasRequestBody = Boolean(op.schema || (!op.discoveryRedirect && ["PUT", "REPORT", "PROPFIND"].includes(op.method)));
   useEffect(() => {
     const params = {};
     const eventUuid = op.method === "PUT" ? crypto.randomUUID() : "";
@@ -107,7 +108,7 @@ export default function Explorer({
         params,
         query,
         headers,
-        ...(op.schema || (!op.discoveryRedirect && ["PUT", "REPORT", "PROPFIND"].includes(op.method))
+        ...(hasRequestBody
           ? { body: service === "rest" ? JSON.parse(body) : body }
           : {}),
       };
@@ -237,7 +238,7 @@ export default function Explorer({
               )}
             </>
           )}
-          {(op.schema || ["PUT", "PROPFIND", "REPORT"].includes(op.method)) && (
+          {hasRequestBody && (
             <Field
               label={
                 service === "rest" ? "Request JSON" : "Protocol request body"
