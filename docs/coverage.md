@@ -2,7 +2,7 @@
 
 49 public REST operations include 18 scheduling operations audited from the deployed router. 32 CalDAV registrations, the discovery redirect, and 4 supplemental health operations are available. The Studio excludes 35 deprecated aliases and keeps 4 lifecycle and 2 CalDAV adapter-only REST operations outside its executor.
 
-rest: source commit da86cdf1c00a7e66abf53cb902fe5d727839fd54; contract SHA256 cef1680c1094f79170d3c29dd98b84efff2637158b1fef301b4bf37cf743fe43; source reconciled true.
+rest: source commit c40678bc1f99fd18bef20b9201470f1f638f3017; contract SHA256 30bf31b4b74891cc818ac56b69683e40b7cf9df7af44aad875585cd6125cf4f8; source reconciled true.
 
 caldav: source commit b765a57ce429489b4ad6bb83e93c0adfdfa1ef69; contract SHA256 5763923fdc24994a522b79de84bb43779b75e950833dcb878dda23fe94a06fe7; source reconciled true.
 

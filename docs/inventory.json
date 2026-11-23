@@ -9,8 +9,8 @@
   "supplementalHealth": 4,
   "evidence": {
     "rest": {
-      "commit": "da86cdf1c00a7e66abf53cb902fe5d727839fd54",
-      "contractSha256": "cef1680c1094f79170d3c29dd98b84efff2637158b1fef301b4bf37cf743fe43",
+      "commit": "c40678bc1f99fd18bef20b9201470f1f638f3017",
+      "contractSha256": "30bf31b4b74891cc818ac56b69683e40b7cf9df7af44aad875585cd6125cf4f8",
       "sourceReconciled": true
     },
     "caldav": {
