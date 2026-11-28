@@ -170,6 +170,8 @@ export function routeFor(op, params = {}, query = {}) {
         !Number.isFinite(Date.parse(value)))
     )
       throw Error(key + " must be an ISO instant");
+    if (key === "slug" && !/^[A-Za-z0-9_-]{32}$/.test(value))
+      throw Error("Use the 32-character booking slug");
     const parts = value.split("/");
     if (parts.some((s) => !s || s === "." || s === ".."))
       throw Error("Unsafe descendant path");

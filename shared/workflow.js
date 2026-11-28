@@ -1,5 +1,6 @@
 import operations from "./operations.json" with { type: "json" };
-import { scenario, shiftDate, localInstant } from "./data.js";
+import { scenario, shiftDate, localInstant, uuidPattern } from "./data.js";
+const calendarAccess = "/api/v1/calendars/access/u/{userUuid}/v/{visibility}";
 export const restOp = (method, route) =>
   operations.find(
     (o) =>
@@ -38,9 +39,17 @@ export async function walkthrough({
     if (!v?.uuid) throw Error(label + " did not return a UUID");
     return v;
   };
+  const linked = await execute({
+    operationId: restOp("GET", calendarAccess).id,
+    params: { userUuid: session.user, visibility: 3 },
+  });
+  const principalPerson = linked.status === 404 ? null : linked.data?.person;
+  if (linked.status !== 404 &&
+      (linked.status !== 200 || linked.data?.userUuid !== session.user || !uuidPattern.test(principalPerson || "")))
+    throw Error("Could not determine your linked Calendar Person");
   ctx.avery = uuid(
     await step("Create Avery Morgan", "POST", "/api/v1/people", {
-      body: { ...sample.avery, user: session.user },
+      body: { ...sample.avery, ...(principalPerson ? {} : { user: session.user }) },
     }),
     "Avery",
   );
@@ -90,23 +99,33 @@ export async function walkthrough({
       role: "editor",
     },
   });
+  if (principalPerson) {
+    await step("Share with your linked Calendar Person", "POST", "/api/v1/calendars/share", {
+      body: {
+        calendar: ctx.calendar.uuid,
+        person: principalPerson,
+        inviter: ctx.avery.uuid,
+        role: "editor",
+      },
+    });
+  }
   await step(
     "Inspect effective owner access",
     "GET",
-    "/api/v1/calendars/access/u/{userUuid}/v/{visibility}",
+    calendarAccess,
     { params: { userUuid: session.user, visibility: 3 } },
   );
   await step(
     "List accessible calendars",
     "GET",
-    "/api/v1/calendars/access/u/{userUuid}/v/{visibility}",
+    calendarAccess,
     { params: { userUuid: session.user, visibility: 15 } },
   );
   if (sharedUser)
     await step(
       "Inspect Taylor user access",
       "GET",
-      "/api/v1/calendars/access/u/{userUuid}/v/{visibility}",
+      calendarAccess,
       { params: { userUuid: sharedUser, visibility: 3 } },
     );
   else
@@ -246,7 +265,7 @@ export async function walkthrough({
       (o) =>
         o.service === "caldav" &&
         o.method === "PROPFIND" &&
-        o.route === "/caldav/calendars/{calendarUuid}",
+        o.route === "/caldav/calendars/{calendarUuid}/",
     );
     const result = await execute({
       operationId: op.id,

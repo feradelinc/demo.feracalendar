@@ -1,6 +1,16 @@
 # Qualification report
 
-The original local implementation qualification below is historical. The authorized hosting follow-up passed 33 Studio Node tests, seven browser/accessibility tests, 18 REST unit tests and 20 CalDAV unit tests. The isolated Linux canary and both new fleet nodes ran fourteen targeted regressions each. Real public-site checks use no fixture interception; authenticated account smoke remains unrun. Current backend differences are in [current backend qualification](current-backend.md), and actual fleet completion, HTTPS evidence and the renewal rehearsal limitation are in [deployment receipt](deployment-20261011.json).
+## November 2026 production API alignment
+
+Both Shared API nodes serve the REST and CalDAV revisions recorded in [coverage](coverage.md). The contract audit reconciles 49 public REST operations, 32 CalDAV registrations, the public discovery redirect, and four health checks.
+
+A disposable Free workspace verified production FerAuth, REST reads and writes, task and reminder operations, Free plan gates, anonymous booking lookup, and the guided Calendar walkthrough. CalDAV returned the expected discovery responses, UTC conversion for `America/New_York`, stable ETags on read-after-write, 412 on conflicting writes, and 403 `valid-sync-token` after a collection change. Scheduling proxy tests cover every route, including the paid-plan and public booking methods.
+
+## October 2026 hosting follow-up
+
+The hosting follow-up passed 33 Studio Node tests, seven browser and accessibility tests, 18 REST unit tests, and 20 CalDAV unit tests. The isolated Linux canary and both new fleet nodes ran fourteen targeted regressions each. At that point, authenticated account smoke testing remained pending. The [deployment receipt](deployment-20261011.json) records the fleet rollout, HTTPS results, and certificate renewal checks.
+
+## Original local implementation audit
 
 ## Scope
 

@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import operations from "../shared/operations.json" with { type: "json" };
 import { redact, routeFor, uuidPattern } from "../shared/data.js";
 import { parseXML, validateICS, normalizeICS } from "../shared/protocol.js";
+import { findRetailOperation } from "../shared/retail-operations.js";
 const fail = (message, status = 400) =>
   Object.assign(Error(message), { status });
 export function safeBase(value) {
@@ -160,6 +161,46 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
     }),
   );
   app.get("/demo/session", (req, res) => res.json(status(req.session)));
+  async function retailRequest(op, route, session, body) {
+    const rest = session?.rest;
+    if (op.auth !== "none" && !rest)
+      throw fail("Connect your FeraCal account first.", 401);
+    const headers = op.auth === "none" ? {} : restHeaders(session);
+    if (op.method !== "GET" && body !== undefined)
+      headers["content-type"] = "application/json";
+    const result = await transmit("calendar", route, op.method, headers,
+      op.method === "GET" ? undefined : body, op.auth === "none" ? [] : [rest.token]);
+    if (op.id === "retail-event-trash-restore" && result.status === 200) {
+      const uuid = result._raw?.item?.uuid;
+      const record = session.trashedEvents?.get(uuid);
+      if (record) {
+        session.records.push(record);
+        session.trashedEvents.delete(uuid);
+      }
+    }
+    return result;
+  }
+  app.all(/^\/demo\/retail\/(.*)$/, async (req, res) => {
+    const route = "/api/v1/retail/" + req.params[0];
+    const op = findRetailOperation(req.method, route);
+    if (!op) {
+      return res.status(404).json({ message: "Calendar operation unavailable." });
+    }
+    try {
+      const params = new URLSearchParams();
+      if (op.id === "retail-reminders-list" && req.query.due === "true") params.set("due", "true");
+      if (op.id === "retail-event-trash-list" && req.query.page !== undefined) params.set("page", String(req.query.page));
+      const query = params.size ? "?" + params : "";
+      const response = await retailRequest(op, route + query, req.session, req.body);
+      const data = response.data;
+      if (response.status >= 400) return res.status(response.status).json({ message: data?.error?.message || "Calendar operation failed." });
+      return res.status(response.status).json(data);
+    } catch (error) {
+      return res.status(error.status || 502).json({
+        message: error.status === 401 ? error.message : "Calendar is temporarily unavailable.",
+      });
+    }
+  });
   app.post("/demo/token", (req, res) =>
     req.session?.rest
       ? res.json({ token: req.session.rest.token })
@@ -295,31 +336,37 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
     try {
       const { username, password, instance } = req.body;
       if (
-        !username ||
-        !password ||
+        typeof username !== "string" || !username ||
+        typeof password !== "string" || !password ||
         username.includes(":") ||
         !uuidPattern.test(instance || "")
       )
         throw fail("CalDAV username, password and instance UUID required");
+      const supplied = username.split("|");
+      if (supplied.length > 2 || supplied.length === 2 && supplied[0].toLowerCase() !== instance.toLowerCase())
+        throw fail("CalDAV username must match the selected workspace", 403);
+      const usernameOnly = supplied.at(-1);
+      if (!usernameOnly) throw fail("CalDAV username required");
+      const scopedUsername = instance.toLowerCase() + "|" + usernameOnly;
       if (req.session?.rest && instance !== req.session.rest.instance)
         throw fail("CalDAV instance must match REST session", 403);
       const result = await transmit(
         "caldav",
-        `/caldav/instance/${instance}`,
+        `/caldav/instance/${instance}/`,
         "PROPFIND",
         {
           authorization:
             "Basic " +
-            Buffer.from(username + ":" + password).toString("base64"),
+            Buffer.from(scopedUsername + ":" + password).toString("base64"),
           depth: "0",
           "content-type": "application/xml",
         },
         '<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:allprop/></d:propfind>',
-        [username, password],
+        [scopedUsername, usernameOnly, password],
       );
       if (result.status === 207) {
         const s = establish(req, res);
-        s.dav = { username, password, instance };
+        s.dav = { username: scopedUsername, usernameOnly, password, instance };
         result.session = status(s);
       }
       res.json(clean(result));
@@ -453,6 +500,7 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
           ),
         );
       }
+      if (op.retail) return res.json(clean(await retailRequest(op, route, s, body)));
       if (op.service === "rest") {
         if (!s?.rest) throw fail("Sign in to establish REST session", 401);
         if (op.method === "POST") {
@@ -496,9 +544,16 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
               throw fail("Invitation requires a demo-created event", 403);
             await eventOwned(s, body.event);
           }
-          for (const field of ["person", "creator", "inviter", "invitedBy"])
-            if (body[field] && !has(s, "people", body[field]))
-              throw fail("Actor must be a demo-created Calendar Person", 403);
+          for (const field of ["person", "creator", "inviter", "invitedBy"]) {
+            if (!body[field] || has(s, "people", body[field])) continue;
+            if (field === "person" && calendar && op.route === "/api/v1/calendars/share" && body.role === "editor") {
+              const principal = await transmit("calendar",
+                `/api/v1/calendars/access/u/${s.rest.user}/v/3`, "GET", restHeaders(s));
+              if (principal.status === 200 && principal._raw?.success === true &&
+                  principal._raw.userUuid === s.rest.user && principal._raw.person === body.person) continue;
+            }
+            throw fail("Actor must be a demo-created Calendar Person or a verified signed-in editor", 403);
+          }
           if (body.resource && !has(s, "resources", body.resource))
             throw fail("Resource must be demo-created", 403);
           for (const field of [
@@ -566,7 +621,11 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
           op.method === "DELETE" &&
           result.status === 200 &&
           result._raw?.success
-        )
+        ) {
+          if (op.group === "events" && result._raw.restorableUntil) {
+            const record = s.records.find(row => row.group === "events" && row.uuid === params.uuid);
+            if (record) (s.trashedEvents ||= new Map()).set(record.uuid, record);
+          }
           s.records = s.records.filter(
             (r) =>
               !(
@@ -574,9 +633,10 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
                 (r.uuid === params.uuid || r.key === params.key)
               ),
           );
+        }
         res.json(clean(result));
       } else {
-        if (op.method !== "OPTIONS" && !s?.dav)
+        if (op.auth !== "none" && op.method !== "OPTIONS" && !s?.dav)
           throw fail("Connect separate CalDAV credentials", 401);
         if (
           op.method !== "OPTIONS" &&
@@ -592,16 +652,18 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
         const outgoing = {};
         for (const [key, value] of Object.entries(headers)) {
           const k = key.toLowerCase();
-          if (!["depth", "if-match"].includes(k))
+          if (!["depth", "if-match", "if-none-match"].includes(k))
             throw fail("Unsupported protocol header " + key, 403);
           if (typeof value !== "string" || /[\r\n]/.test(value))
             throw fail("Invalid protocol header");
           if (k === "depth" && !["0", "1", "infinity"].includes(value))
             throw fail("Depth must be 0, 1 or infinity");
-          outgoing[k] = value;
+          if (value) outgoing[k] = value;
         }
         let input = body;
-        if (["PROPFIND", "REPORT"].includes(op.method)) {
+        if (op.method === "PROPFIND" && input != null && typeof input !== "string")
+          throw fail("PROPFIND body must be XML text");
+        if (op.method === "REPORT" || (op.method === "PROPFIND" && input?.trim())) {
           try {
             parseXML(input || "");
           } catch (e) {
@@ -609,6 +671,7 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
           }
           outgoing["content-type"] = "application/xml";
         }
+        if (op.method === "PROPFIND" && !input?.trim()) input = undefined;
         if (["PUT", "DELETE"].includes(op.method)) {
           if (!s?.rest || !has(s, "calendars", params.calendarUuid))
             throw fail(
@@ -634,27 +697,14 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
               !has(s, "davEvents", eventUuid) &&
               !has(s, "events", eventUuid)
             ) {
-              const check = await transmit(
-                "caldav",
-                route,
-                "GET",
-                {
-                  authorization:
-                    "Basic " +
-                    Buffer.from(s.dav.username + ":" + s.dav.password).toString(
-                      "base64",
-                    ),
-                },
-                undefined,
-                [s.dav.username, s.dav.password],
-              );
-              if (check.status !== 404)
-                throw fail("New ICS UUID must not already exist", 403);
-            } else if (!outgoing["if-match"])
+              if (outgoing["if-match"] || (outgoing["if-none-match"] && outgoing["if-none-match"] !== "*"))
+                throw fail("New ICS resources require If-None-Match: *");
+              outgoing["if-none-match"] = "*";
+            } else if (!outgoing["if-match"] && outgoing["if-none-match"] !== "*")
               throw fail("Existing ICS edits require If-Match");
           }
         }
-        if (s?.dav)
+        if (s?.dav && op.method !== "OPTIONS" && !op.discoveryRedirect)
           outgoing.authorization =
             "Basic " +
             Buffer.from(s.dav.username + ":" + s.dav.password).toString(
@@ -666,7 +716,7 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
           op.method,
           outgoing,
           ["PUT", "REPORT", "PROPFIND"].includes(op.method) ? input : undefined,
-          [s?.dav?.username, s?.dav?.password],
+          [s?.dav?.username, s?.dav?.usernameOnly, s?.dav?.password],
         );
         if (
           op.method === "PUT" &&
@@ -678,6 +728,10 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
             uuid: params.path.slice(0, -4),
             calendar: params.calendarUuid,
           });
+        if (op.method === "DELETE" && result.status === 204)
+          s.records = s.records.filter((record) => !(
+            ["events", "davEvents"].includes(record.group) && record.uuid === params.path.slice(0, -4)
+          ));
         res.json(clean(result));
       }
     } catch (e) {

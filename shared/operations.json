@@ -346,7 +346,7 @@
     "health": false,
     "supplemental": false,
     "auth": "x-auth-token + instance",
-    "permission": "JWT/product; source omits named permission checks",
+    "permission": "Service permission VERIFY.CALDAV",
     "summary": "Resolve effective user access",
     "sourceSummary": "GET controller.resolveAccess",
     "description": "Implements controller.resolveAccess in routes/api/v1/calendar/routes.js:12. The authenticated boundary enforces managed-product and owner/member role rules, uses owner-scoped keys/UUIDs, applies visibility masks only after access resolution, and records mutations.",
@@ -400,7 +400,7 @@
     "health": false,
     "supplemental": false,
     "auth": "x-auth-token + instance",
-    "permission": "JWT/product; source omits named permission checks",
+    "permission": "Service permission VERIFY.CALDAV",
     "summary": "Resolve calendar owner context",
     "sourceSummary": "GET controller.resolve",
     "description": "Implements controller.resolve in routes/api/v1/calendar/routes.js:13. The authenticated boundary enforces managed-product and owner/member role rules, uses owner-scoped keys/UUIDs, applies visibility masks only after access resolution, and records mutations.",
@@ -2196,6 +2196,38 @@
     }
   },
   {
+    "id": "calendar_get_calendarsPublic",
+    "service": "rest",
+    "method": "GET",
+    "route": "/api/v1/calendars/public",
+    "group": "calendars",
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "VIEW.CALENDAR",
+    "summary": "List public calendars in the authenticated workspace",
+    "sourceSummary": "List calendars with the public option",
+    "description": "Lists only the UUIDs of calendars with shared=true inside the resolved tenant partition. Requires VIEW.CALENDAR. Includes public person and global calendars without restricting results to the signed-in person, and does not expose events or membership data.",
+    "parameters": [],
+    "schema": null,
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/calendar/routes.js",
+      "handler": "controller.public",
+      "line": 16
+    },
+    "responses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "example": {}
+  },
+  {
     "id": "feradel_calendar_caldav_health_live",
     "service": "caldav",
     "method": "GET",
@@ -3636,6 +3668,1025 @@
       "404",
       "412",
       "500"
+    ],
+    "example": {}
+  },
+  {
+    "id": "caldav_discovery_head",
+    "service": "caldav",
+    "method": "HEAD",
+    "route": "/caldav/",
+    "group": "CalDAV",
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "HTTP Basic",
+    "permission": "Basic principal + calendar read/write capability",
+    "summary": "Inspect collection metadata",
+    "sourceSummary": "HEAD the CalDAV service root",
+    "description": "Discovers calendars or confirms read access at the CalDAV service root. The Basic username supplies the FeraCal workspace UUID, a pipe, and the account email. The normal account password authenticates the workspace member.",
+    "parameters": [],
+    "schema": null,
+    "conditions": [],
+    "source": {
+      "route": "src/caldav/router.js",
+      "handler": "controller.headCollection",
+      "line": 12
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "example": {}
+  },
+  {
+    "id": "caldav_discovery_propfind",
+    "service": "caldav",
+    "method": "PROPFIND",
+    "route": "/caldav/",
+    "group": "CalDAV",
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "HTTP Basic",
+    "permission": "Basic principal + calendar read/write capability",
+    "summary": "Discover principal and calendar properties",
+    "sourceSummary": "PROPFIND the CalDAV service root",
+    "description": "Discovers calendars or confirms read access at the CalDAV service root. The Basic username supplies the FeraCal workspace UUID, a pipe, and the account email. The normal account password authenticates the workspace member.",
+    "parameters": [],
+    "schema": null,
+    "conditions": [],
+    "source": {
+      "route": "src/caldav/router.js",
+      "handler": "controller.propfind",
+      "line": 13
+    },
+    "responses": [
+      "207",
+      "401",
+      "403",
+      "500"
+    ],
+    "example": {}
+  },
+  {
+    "id": "retail-capabilities",
+    "service": "rest",
+    "method": "GET",
+    "route": "/api/v1/retail/capabilities",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Active FeraCal workspace membership",
+    "summary": "Get plan capabilities and editable calendars",
+    "parameters": [],
+    "schema": null,
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "example": {}
+  },
+  {
+    "id": "retail-event-trash-list",
+    "service": "rest",
+    "method": "GET",
+    "route": "/api/v1/retail/event-trash",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Active FeraCal workspace · calendar edit access",
+    "summary": "List recently deleted events from editable calendars",
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 999999
+        },
+        "description": "Return the requested page of up to 50 deleted events."
+      }
+    ],
+    "schema": null,
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "example": {}
+  },
+  {
+    "id": "retail-event-trash-restore",
+    "service": "rest",
+    "method": "POST",
+    "route": "/api/v1/retail/event-trash/{uuid}/restore",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Active FeraCal workspace · calendar edit access",
+    "summary": "Restore a deleted event",
+    "parameters": [
+      {
+        "name": "uuid",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    ],
+    "schema": null,
+    "conditions": [
+      "Requires current edit access to the original calendar. Events are recoverable for 30 days."
+    ],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "409",
+      "503"
+    ],
+    "example": {}
+  },
+  {
+    "id": "retail-tasks-list",
+    "service": "rest",
+    "method": "GET",
+    "route": "/api/v1/retail/tasks",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Active FeraCal workspace membership",
+    "summary": "List your tasks",
+    "parameters": [],
+    "schema": null,
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "example": {}
+  },
+  {
+    "id": "retail-tasks-create",
+    "service": "rest",
+    "method": "POST",
+    "route": "/api/v1/retail/tasks",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Active FeraCal workspace membership",
+    "summary": "Create a task",
+    "parameters": [],
+    "schema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 4000
+        },
+        "dueAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "title"
+      ]
+    },
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "201",
+      "401",
+      "403",
+      "422",
+      "503"
+    ],
+    "example": {
+      "title": "Prepare agenda"
+    }
+  },
+  {
+    "id": "retail-tasks-update",
+    "service": "rest",
+    "method": "PATCH",
+    "route": "/api/v1/retail/tasks/{uuid}",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Active FeraCal workspace membership",
+    "summary": "Update or complete a task",
+    "parameters": [
+      {
+        "name": "uuid",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    ],
+    "schema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 4000
+        },
+        "dueAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "completed": {
+          "type": "boolean"
+        }
+      },
+      "required": []
+    },
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "422",
+      "503"
+    ],
+    "example": {
+      "completed": true
+    }
+  },
+  {
+    "id": "retail-tasks-delete",
+    "service": "rest",
+    "method": "DELETE",
+    "route": "/api/v1/retail/tasks/{uuid}",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Active FeraCal workspace membership",
+    "summary": "Delete a task and its reminders",
+    "parameters": [
+      {
+        "name": "uuid",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    ],
+    "schema": null,
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "503"
+    ],
+    "example": {}
+  },
+  {
+    "id": "retail-reminders-list",
+    "service": "rest",
+    "method": "GET",
+    "route": "/api/v1/retail/reminders",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Active FeraCal workspace membership",
+    "summary": "List undismissed reminders",
+    "parameters": [
+      {
+        "name": "due",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "true"
+          ]
+        },
+        "description": "Use true to return only reminders currently due."
+      }
+    ],
+    "schema": null,
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "example": {}
+  },
+  {
+    "id": "retail-reminders-create",
+    "service": "rest",
+    "method": "POST",
+    "route": "/api/v1/retail/reminders",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Active FeraCal workspace membership",
+    "summary": "Create a reminder",
+    "parameters": [],
+    "schema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "dueAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "taskUuid": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "dueAt"
+      ]
+    },
+    "conditions": [
+      "Use a future instant with a UTC offset. Supply a title or link an incomplete task."
+    ],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "201",
+      "401",
+      "403",
+      "404",
+      "409",
+      "422",
+      "503"
+    ],
+    "example": {
+      "title": "Prepare meeting",
+      "dueAt": "2030-06-15T14:00:00Z"
+    }
+  },
+  {
+    "id": "retail-reminders-dismiss",
+    "service": "rest",
+    "method": "POST",
+    "route": "/api/v1/retail/reminders/{uuid}/dismiss",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Active FeraCal workspace membership",
+    "summary": "Dismiss a reminder",
+    "parameters": [
+      {
+        "name": "uuid",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    ],
+    "schema": null,
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "503"
+    ],
+    "example": {}
+  },
+  {
+    "id": "retail-booking-pages-list",
+    "service": "rest",
+    "method": "GET",
+    "route": "/api/v1/retail/booking-pages",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Starter or higher · calendar edit access",
+    "summary": "List booking pages for editable calendars",
+    "parameters": [],
+    "schema": null,
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "example": {}
+  },
+  {
+    "id": "retail-booking-pages-create",
+    "service": "rest",
+    "method": "POST",
+    "route": "/api/v1/retail/booking-pages",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Starter or higher · calendar edit access",
+    "summary": "Create a booking page",
+    "parameters": [],
+    "schema": {
+      "type": "object",
+      "properties": {
+        "calendarUuid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "duration": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 240
+        },
+        "slots": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 48,
+          "items": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "required": [
+        "calendarUuid",
+        "title",
+        "duration",
+        "slots"
+      ]
+    },
+    "conditions": [
+      "Choose a calendar you can edit. Times must fall within the next 90 days and may not overlap."
+    ],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "201",
+      "401",
+      "403",
+      "404",
+      "422",
+      "503"
+    ],
+    "example": {
+      "calendarUuid": "",
+      "title": "Intro call",
+      "duration": 30,
+      "slots": [
+        "2030-06-15T14:00:00Z"
+      ]
+    }
+  },
+  {
+    "id": "retail-booking-pages-update",
+    "service": "rest",
+    "method": "PATCH",
+    "route": "/api/v1/retail/booking-pages/{uuid}",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Starter or higher · calendar edit access",
+    "summary": "Update or publish a booking page",
+    "parameters": [
+      {
+        "name": "uuid",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    ],
+    "schema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "duration": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 240
+        },
+        "slots": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 48,
+          "items": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "published": {
+          "type": "boolean"
+        }
+      },
+      "required": []
+    },
+    "conditions": [
+      "Send replacement slots when changing the duration."
+    ],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "422",
+      "503"
+    ],
+    "example": {
+      "published": true
+    }
+  },
+  {
+    "id": "retail-booking-pages-reservations",
+    "service": "rest",
+    "method": "GET",
+    "route": "/api/v1/retail/booking-pages/{uuid}/reservations",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Starter or higher · calendar edit access",
+    "summary": "List reservations for a booking page",
+    "parameters": [
+      {
+        "name": "uuid",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    ],
+    "schema": null,
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "503"
+    ],
+    "example": {}
+  },
+  {
+    "id": "retail-automation-rules-list",
+    "service": "rest",
+    "method": "GET",
+    "route": "/api/v1/retail/automation-rules",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Complete or Beyond · rule owner for edits",
+    "summary": "List your automation rules",
+    "parameters": [],
+    "schema": null,
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "example": {}
+  },
+  {
+    "id": "retail-automation-rules-create",
+    "service": "rest",
+    "method": "POST",
+    "route": "/api/v1/retail/automation-rules",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Complete or Beyond · rule owner for edits",
+    "summary": "Create an automation rule",
+    "parameters": [],
+    "schema": {
+      "type": "object",
+      "properties": {
+        "calendarUuid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "minutesBefore": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10080
+        },
+        "trigger": {
+          "type": "string",
+          "enum": [
+            "event.created",
+            "booking.created"
+          ]
+        }
+      },
+      "required": [
+        "calendarUuid",
+        "title",
+        "minutesBefore",
+        "trigger"
+      ]
+    },
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "201",
+      "401",
+      "403",
+      "404",
+      "422",
+      "503"
+    ],
+    "example": {
+      "calendarUuid": "",
+      "title": "Upcoming meeting",
+      "minutesBefore": 15,
+      "trigger": "event.created"
+    }
+  },
+  {
+    "id": "retail-automation-rules-update",
+    "service": "rest",
+    "method": "PATCH",
+    "route": "/api/v1/retail/automation-rules/{uuid}",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Complete or Beyond · rule owner for edits",
+    "summary": "Enable or disable an automation rule",
+    "parameters": [
+      {
+        "name": "uuid",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    ],
+    "schema": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    },
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "422",
+      "503"
+    ],
+    "example": {
+      "enabled": false
+    }
+  },
+  {
+    "id": "retail-automation-rules-delete",
+    "service": "rest",
+    "method": "DELETE",
+    "route": "/api/v1/retail/automation-rules/{uuid}",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Complete or Beyond · rule owner for edits",
+    "summary": "Delete an automation rule",
+    "parameters": [
+      {
+        "name": "uuid",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    ],
+    "schema": null,
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "503"
+    ],
+    "example": {}
+  },
+  {
+    "id": "retail-booking-read",
+    "service": "rest",
+    "method": "GET",
+    "route": "/api/v1/retail/booking/{slug}",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "none",
+    "permission": "Published booking link",
+    "summary": "Read a published booking page",
+    "parameters": [
+      {
+        "name": "slug",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{32}$"
+        }
+      }
+    ],
+    "schema": null,
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "404",
+      "503"
+    ],
+    "example": {}
+  },
+  {
+    "id": "retail-booking-reserve",
+    "service": "rest",
+    "method": "POST",
+    "route": "/api/v1/retail/booking/{slug}/reservations",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "none",
+    "permission": "Published booking link",
+    "summary": "Reserve an available time",
+    "parameters": [
+      {
+        "name": "slug",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{32}$"
+        }
+      }
+    ],
+    "schema": {
+      "type": "object",
+      "properties": {
+        "startsAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 254,
+          "format": "email"
+        },
+        "requestId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "startsAt",
+        "name",
+        "email",
+        "requestId"
+      ]
+    },
+    "conditions": [
+      "Generate one request UUID for the booking. Reuse it only when retrying the same time, name and email."
+    ],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "404",
+      "409",
+      "422",
+      "503"
+    ],
+    "example": {
+      "startsAt": "2030-06-15T14:00:00Z",
+      "name": "Guest name",
+      "email": "guest@example.test",
+      "requestId": ""
+    }
+  },
+  {
+    "id": "caldav-discovery-redirect",
+    "service": "caldav",
+    "method": "PROPFIND",
+    "route": "/.well-known/caldav",
+    "group": "CalDAV",
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "discoveryRedirect": true,
+    "auth": "none",
+    "permission": "Public discovery",
+    "summary": "Find the CalDAV service URL",
+    "parameters": [],
+    "schema": null,
+    "conditions": [
+      "The server returns 301 to /caldav/. The Studio displays the redirect without following it."
+    ],
+    "source": {
+      "route": "src/app.js",
+      "handler": "application discovery redirect"
+    },
+    "responses": [
+      "301"
     ],
     "example": {}
   }

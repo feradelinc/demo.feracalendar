@@ -297,6 +297,14 @@
     }
   },
   {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/calendars/public",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
     "method": "OPTIONS",
     "url": "{{caldavBase}}/caldav/events",
     "headers": {}
@@ -510,9 +518,9 @@
     "headers": {
       "authorization": "{{basicFromSecureInput}}",
       "content-type": "text/calendar",
-      "if-match": "{{capturedETag}}"
+      "if-none-match": "*"
     },
-    "body": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Feradel//FeraCalendar Developer Studio//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:11111111-1111-4111-8111-111111111111\r\nDTSTAMP:20261011T204426Z\r\nDTSTART:20270615T140000Z\r\nDTEND:20270615T150000Z\r\nSUMMARY:New Client Consultation\r\nDESCRIPTION:Fictional Northstar Consulting calendar demonstration.\r\nLOCATION:Conference Room A\r\nSTATUS:CONFIRMED\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+    "body": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Feradel//FeraCalendar Developer Studio//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:11111111-1111-4111-8111-111111111111\r\nDTSTAMP:20261122T161819Z\r\nDTSTART:20270615T140000Z\r\nDTEND:20270615T150000Z\r\nSUMMARY:New Client Consultation\r\nDESCRIPTION:Fictional Northstar Consulting calendar demonstration.\r\nLOCATION:Conference Room A\r\nSTATUS:CONFIRMED\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
   },
   {
     "method": "DELETE",
@@ -520,5 +528,210 @@
     "headers": {
       "authorization": "{{basicFromSecureInput}}"
     }
+  },
+  {
+    "method": "HEAD",
+    "url": "{{caldavBase}}/caldav/",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}"
+    }
+  },
+  {
+    "method": "PROPFIND",
+    "url": "{{caldavBase}}/caldav/",
+    "headers": {
+      "authorization": "{{basicFromSecureInput}}",
+      "depth": "1",
+      "content-type": "application/xml"
+    },
+    "body": "<?xml version=\"1.0\"?><d:propfind xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:caldav\"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>"
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/retail/capabilities",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/retail/tasks",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "POST",
+    "url": "{{calendarBase}}/api/v1/retail/tasks",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "title": "Prepare agenda"
+    }
+  },
+  {
+    "method": "PATCH",
+    "url": "{{calendarBase}}/api/v1/retail/tasks/{{uuid}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "completed": true
+    }
+  },
+  {
+    "method": "DELETE",
+    "url": "{{calendarBase}}/api/v1/retail/tasks/{{uuid}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/retail/reminders",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "POST",
+    "url": "{{calendarBase}}/api/v1/retail/reminders",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "title": "Prepare meeting",
+      "dueAt": "{{futureInstant}}"
+    }
+  },
+  {
+    "method": "POST",
+    "url": "{{calendarBase}}/api/v1/retail/reminders/{{uuid}}/dismiss",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/retail/booking-pages",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "POST",
+    "url": "{{calendarBase}}/api/v1/retail/booking-pages",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "calendarUuid": "{{calendarUuid}}",
+      "title": "Intro call",
+      "duration": 30,
+      "slots": [
+        "{{futureInstant}}"
+      ]
+    }
+  },
+  {
+    "method": "PATCH",
+    "url": "{{calendarBase}}/api/v1/retail/booking-pages/{{uuid}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "published": true
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/retail/booking-pages/{{uuid}}/reservations",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/retail/automation-rules",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "POST",
+    "url": "{{calendarBase}}/api/v1/retail/automation-rules",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "calendarUuid": "{{calendarUuid}}",
+      "title": "Upcoming meeting",
+      "minutesBefore": 15,
+      "trigger": "event.created"
+    }
+  },
+  {
+    "method": "PATCH",
+    "url": "{{calendarBase}}/api/v1/retail/automation-rules/{{uuid}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "enabled": false
+    }
+  },
+  {
+    "method": "DELETE",
+    "url": "{{calendarBase}}/api/v1/retail/automation-rules/{{uuid}}",
+    "headers": {
+      "instance": "{{instance}}",
+      "x-auth-token": "{{jwt}}"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "{{calendarBase}}/api/v1/retail/booking/{{slug}}",
+    "headers": {}
+  },
+  {
+    "method": "POST",
+    "url": "{{calendarBase}}/api/v1/retail/booking/{{slug}}/reservations",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "startsAt": "{{publishedSlotInstant}}",
+      "name": "Guest name",
+      "email": "guest@example.test",
+      "requestId": "{{bookingRequestUuid}}"
+    }
+  },
+  {
+    "method": "PROPFIND",
+    "url": "{{caldavBase}}/.well-known/caldav",
+    "headers": {}
   }
 ]

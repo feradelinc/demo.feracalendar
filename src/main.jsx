@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./style.css";
 import { local } from "./api.js";
+import { uuidPattern } from "../shared/data.js";
 import { Inspector, Json, Notice } from "./components/Common.jsx";
 import GettingStarted from "./components/GettingStarted.jsx";
 import CalendarWorkspace from "./components/CalendarWorkspace.jsx";
@@ -15,8 +16,12 @@ import Explorer from "./components/Explorer.jsx";
 import CalDAVLab from "./components/CalDAVLab.jsx";
 import operations from "../shared/operations.json" with { type: "json" };
 import Icon from "./components/Icon.jsx";
+import RetailScheduling, { DueReminders, PublicBooking } from "./components/RetailScheduling.jsx";
+const restCount = operations.filter((o) => o.service === "rest" && !o.internal && !o.health).length;
+const caldavCount = operations.filter((o) => o.service === "caldav" && !o.health && !o.discoveryRedirect).length;
 const pages = [
   ["Calendar", "calendar"],
+  ["Scheduling tools", "clock"],
   ["Getting started", "connect"],
   ["Full demonstration", "play"],
   ["Calendars & sharing", "share"],
@@ -31,7 +36,11 @@ const pages = [
 ];
 
 function App() {
-  const [page, setPage] = useState("Calendar"),
+  const [requestedInstance] = useState(() => {
+    const instance = new URLSearchParams(window.location.search).get("instance");
+    return uuidPattern.test(instance || "") ? instance : "";
+  });
+  const [page, setPage] = useState(requestedInstance ? "Getting started" : "Calendar"),
     [config, setConfig] = useState(null),
     [session, setSession] = useState({ authenticated: false }),
     [context, setContext] = useState({}),
@@ -43,11 +52,14 @@ function App() {
   }
   useEffect(() => {
     Promise.all([local("config"), refresh()])
-      .then(([c]) => setConfig(c))
+      .then(([c]) => setConfig({ ...c, instance: requestedInstance || c.instance }))
       .catch((e) => setError(e.message));
     const timer = setInterval(() => refresh().catch(() => {}), 30000);
     return () => clearInterval(timer);
-  }, []);
+  }, [requestedInstance]);
+  useEffect(() => {
+    if (requestedInstance && session.authenticated && session.instance === requestedInstance) setPage("Calendar");
+  }, [requestedInstance, session.authenticated, session.instance]);
   async function run(fn) {
     setRunning(true);
     setError("");
@@ -101,9 +113,9 @@ function App() {
         <div className="sidebar-bottom">
           <span className="live-dot" /> LIVE API MODE
           <p>
-            30 REST operations
+            {restCount} REST operations
             <br />
-            30 CalDAV registrations
+            {caldavCount} CalDAV registrations
           </p>
           <img src="/assets/feradel.svg" alt="Feradel" />
         </div>
@@ -146,6 +158,7 @@ function App() {
           </div>
         </header>
         <div className="content">
+          <DueReminders connected={session.authenticated} />
           {error && (
             <p className="error global-error" role="alert">
               {error}
@@ -156,6 +169,7 @@ function App() {
           ) : (
             <>
               {page === "Calendar" && <CalendarWorkspace {...props} />}{" "}
+              {page === "Scheduling tools" && <RetailScheduling {...props} />}
               {page === "Getting started" && <GettingStarted {...props} />}{" "}
               {page === "Full demonstration" && <Walkthrough {...props} />}{" "}
               {page === "Calendars & sharing" && (
@@ -175,19 +189,16 @@ function App() {
               {page === "Contracts & boundaries" && (
                 <section className="panel">
                   <div className="eyebrow">SOURCE-AUDITED CONTRACTS</div>
-                  <h2>Public capabilities. Explicit boundaries.</h2>
+                  <h2>REST and CalDAV contracts</h2>
                   <p>
-                    All canonical public operations have executable support.
-                    Implementation coverage is distinct from live API
-                    qualification. Deprecated aliases are intentionally
-                    excluded.
+                    The explorers cover canonical calendar and scheduling routes,
+                    CalDAV discovery, and service health checks.
                   </p>
                   <Notice>
-                    Calendar Person records differ from FerAuth identities.
-                    Visibility bits are list filters, not authorization. Writes
-                    and cleanup are confined to records created in the current
-                    session. Matters API is never a destination and is
-                    unchanged.
+                    Calendar Person records and FerAuth accounts have separate IDs.
+                    Visibility bits filter results. Calendar and CalDAV lab
+                    writes require records created in the current Studio session.
+                    Scheduling tools use the signed-in member's plan and permissions.
                   </Notice>
                   <h3>Privileged lifecycle operations ? documentation only</h3>
                   <Json
@@ -203,33 +214,22 @@ function App() {
                   <ul>
                     <li>
                       People lookup and availability require VIEW.PERSON.
-                      The original source audit found a missing getter; the
-                      hosted backend includes its correction.
                     </li>
                     <li>
-                      The proxy independently verifies calendar ownership and
-                      restricts writes to records created in this session.
+                      Calendar resolve routes require the VERIFY.CALDAV service
+                      permission. The walkthrough uses calendar access reads.
                     </li>
                     <li>
-                      Named permission checks are invoked by most services,
-                      contrary to the general OpenAPI access description.
-                      Current calendar resolve routes require VERIFY.CALDAV,
-                      a backend service permission. The guided walkthrough uses
-                      normal calendar access reads instead.
-                    </li>
-                    <li>
-                      Recurrence is stored as metadata. History lists older
-                      events with source-supported pagination, not revision
-                      history.
+                      Recurrence is stored as metadata. History paginates older events.
                     </li>
                     <li>
                       Invitation operations do not send emails. No configurable
                       event webhook is exposed.
                     </li>
                     <li>
-                      CalDAV sync returns a snapshot and TZID parsing is limited.
-                      The hosted adapter preserves exclusive all-day end dates
-                      and forwards conditional ETags to the Calendar API.
+                      CalDAV supports IANA TZIDs and exclusive all-day end dates.
+                      Sync starts with a snapshot. A stale token requires a fresh
+                      snapshot after a 403 valid-sync-token response.
                     </li>
                   </ul>
                   <p>
@@ -255,4 +255,5 @@ function App() {
     </div>
   );
 }
-createRoot(document.getElementById("root")).render(<App />);
+const bookingRoute = /^\/book\/([a-zA-Z0-9_-]{32})\/?$/.exec(window.location.pathname);
+createRoot(document.getElementById("root")).render(bookingRoute ? <PublicBooking slug={bookingRoute[1]} /> : <App />);

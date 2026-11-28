@@ -4,6 +4,13 @@ import { scenario } from "../shared/data.js";
 import { xmlExamples, sampleICS } from "../shared/protocol.js";
 const uuid = "11111111-1111-4111-8111-111111111111",
   sample = scenario("2027-06-15", "America/New_York", "YOUR_SESSION_PREFIX");
+const retailVariables = {
+  calendarUuid: "{{calendarUuid}}",
+  dueAt: "{{futureInstant}}",
+  startsAt: "{{publishedSlotInstant}}",
+  requestId: "{{bookingRequestUuid}}",
+  slots: ["{{futureInstant}}"],
+};
 const requests = operations
   .filter((o) => !o.internal && !o.supplemental && !o.health)
   .map((op) => {
@@ -23,13 +30,19 @@ const requests = operations
       );
     const body =
       op.service === "caldav"
-        ? op.method === "PROPFIND"
+        ? op.method === "PROPFIND" && !op.discoveryRedirect
           ? xmlExamples.propfind
           : op.method === "REPORT"
             ? xmlExamples.query
             : op.method === "PUT"
               ? sampleICS(uuid, sample.event)
               : undefined
+        : op.retail
+          ? op.schema
+            ? Object.fromEntries(Object.entries(op.example).map(([key, value]) =>
+                [key, retailVariables[key] ?? value],
+              ))
+            : undefined
         : op.method === "POST"
           ? op.route.endsWith("share")
             ? {
@@ -73,20 +86,19 @@ const requests = operations
       headers:
         op.service === "rest"
           ? {
-              instance: "{{instance}}",
-              "x-auth-token": "{{jwt}}",
+              ...(op.auth === "none" ? {} : { instance: "{{instance}}", "x-auth-token": "{{jwt}}" }),
               ...(body ? { "content-type": "application/json" } : {}),
             }
           : {
-              ...(op.method !== "OPTIONS"
+              ...(op.method !== "OPTIONS" && !op.discoveryRedirect
                 ? { authorization: "{{basicFromSecureInput}}" }
                 : {}),
-              ...(["PROPFIND", "REPORT"].includes(op.method)
+              ...(!op.discoveryRedirect && ["PROPFIND", "REPORT"].includes(op.method)
                 ? { depth: "1", "content-type": "application/xml" }
                 : op.method === "PUT"
                   ? {
                       "content-type": "text/calendar",
-                      "if-match": "{{capturedETag}}",
+                      "if-none-match": "*",
                     }
                   : {}),
             },
@@ -120,7 +132,8 @@ fs.writeFileSync(
             : "") +
           "\n",
       )
-      .join("\n"),
+      .join("\n")
+      .trimEnd() + "\n",
 );
 fs.writeFileSync(
   "examples/requests.json",
@@ -136,7 +149,7 @@ fs.writeFileSync(
 );
 fs.writeFileSync(
   "examples/caldav.curl",
-  `# curl prompts for password; it is never embedded in the URL or example.\ncurl --request PROPFIND "$CALDAV_API_URL/caldav/instance/$INSTANCE_UUID/" \\\n  --user "$CALDAV_USERNAME" --header 'Depth: 1' --header 'Content-Type: application/xml' \\\n  --data-binary '<d:propfind xmlns:d="DAV:"><d:allprop/></d:propfind>'\n\n# Conditional edit: use the ETag captured from GET.\ncurl --request PUT "$CALDAV_API_URL/caldav/calendars/$CALENDAR_UUID/$EVENT_UUID.ics" \\\n  --user "$CALDAV_USERNAME" --header "If-Match: $CAPTURED_ETAG" \\\n  --header 'Content-Type: text/calendar' --data-binary '@event.ics'\n`,
+  `# curl prompts for password; it is never embedded in the URL or example.\ncurl --request PROPFIND "$CALDAV_API_URL/caldav/instance/$INSTANCE_UUID/" \\\n  --user "$INSTANCE_UUID|$CALDAV_USERNAME" --header 'Depth: 1' --header 'Content-Type: application/xml' \\\n  --data-binary '<d:propfind xmlns:d="DAV:"><d:allprop/></d:propfind>'\n\n# Conditional edit: use the ETag captured from GET.\ncurl --request PUT "$CALDAV_API_URL/caldav/calendars/$CALENDAR_UUID/$EVENT_UUID.ics" \\\n  --user "$INSTANCE_UUID|$CALDAV_USERNAME" --header "If-Match: $CAPTURED_ETAG" \\\n  --header 'Content-Type: text/calendar' --data-binary '@event.ics'\n`,
 );
 fs.writeFileSync("examples/event.ics", sampleICS(uuid, sample.event));
 for (const [name, xml] of Object.entries(xmlExamples))

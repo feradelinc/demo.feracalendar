@@ -106,7 +106,7 @@ export default function Walkthrough({ session, run, onContext, refresh }) {
             disabled={!session.caldavConnected}
             onChange={(e) => setDav(e.target.checked)}
           />{" "}
-          Include separately authenticated CalDAV discovery
+          Include CalDAV discovery with the same account
         </label>
         <div className="row">
           <button
@@ -125,10 +125,9 @@ export default function Walkthrough({ session, run, onContext, refresh }) {
           </button>
         </div>
         <Notice>
-          Calendar Person identifiers are distinct from FerAuth users. Avery is
-          associated with your signed-in user; Taylor?s identity-based access is
-          optional until you supply an authorized shared user. Recurrence is
-          metadata, and history is older event data.
+          The demo shares its calendar with your linked Calendar Person. If you
+          have no linked Person, it links Avery to your account. To check
+          Taylor’s access, supply an authorized shared user.
         </Notice>
         {error && (
           <p role="alert" className="error">

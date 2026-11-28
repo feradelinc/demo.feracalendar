@@ -216,6 +216,11 @@ DELETE {{calendarBase}}/api/v1/events/i/{{uuid}}/k/{{key}}
 instance: {{instance}}
 x-auth-token: {{jwt}}
 
+### GET {{calendarBase}}/api/v1/calendars/public
+GET {{calendarBase}}/api/v1/calendars/public
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
 ### OPTIONS {{caldavBase}}/caldav/events
 OPTIONS {{caldavBase}}/caldav/events
 
@@ -372,7 +377,7 @@ authorization: {{basicFromSecureInput}}
 PUT {{caldavBase}}/caldav/calendars/{{calendarUuid}}/11111111-1111-4111-8111-111111111111.ics
 authorization: {{basicFromSecureInput}}
 content-type: text/calendar
-if-match: {{capturedETag}}
+if-none-match: *
 
 BEGIN:VCALENDAR
 VERSION:2.0
@@ -380,7 +385,7 @@ PRODID:-//Feradel//FeraCalendar Developer Studio//EN
 CALSCALE:GREGORIAN
 BEGIN:VEVENT
 UID:11111111-1111-4111-8111-111111111111
-DTSTAMP:20261011T204426Z
+DTSTAMP:20261122T161819Z
 DTSTART:20270615T140000Z
 DTEND:20270615T150000Z
 SUMMARY:New Client Consultation
@@ -394,3 +399,157 @@ END:VCALENDAR
 ### DELETE {{caldavBase}}/caldav/calendars/{{calendarUuid}}/11111111-1111-4111-8111-111111111111.ics
 DELETE {{caldavBase}}/caldav/calendars/{{calendarUuid}}/11111111-1111-4111-8111-111111111111.ics
 authorization: {{basicFromSecureInput}}
+
+### HEAD {{caldavBase}}/caldav/
+HEAD {{caldavBase}}/caldav/
+authorization: {{basicFromSecureInput}}
+
+### PROPFIND {{caldavBase}}/caldav/
+PROPFIND {{caldavBase}}/caldav/
+authorization: {{basicFromSecureInput}}
+depth: 1
+content-type: application/xml
+
+<?xml version="1.0"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><d:displayname/><d:resourcetype/><d:current-user-privilege-set/><d:sync-token/><c:calendar-home-set/></d:prop></d:propfind>
+
+### GET {{calendarBase}}/api/v1/retail/capabilities
+GET {{calendarBase}}/api/v1/retail/capabilities
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/retail/tasks
+GET {{calendarBase}}/api/v1/retail/tasks
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### POST {{calendarBase}}/api/v1/retail/tasks
+POST {{calendarBase}}/api/v1/retail/tasks
+instance: {{instance}}
+x-auth-token: {{jwt}}
+content-type: application/json
+
+{
+  "title": "Prepare agenda"
+}
+
+### PATCH {{calendarBase}}/api/v1/retail/tasks/{{uuid}}
+PATCH {{calendarBase}}/api/v1/retail/tasks/{{uuid}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+content-type: application/json
+
+{
+  "completed": true
+}
+
+### DELETE {{calendarBase}}/api/v1/retail/tasks/{{uuid}}
+DELETE {{calendarBase}}/api/v1/retail/tasks/{{uuid}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/retail/reminders
+GET {{calendarBase}}/api/v1/retail/reminders
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### POST {{calendarBase}}/api/v1/retail/reminders
+POST {{calendarBase}}/api/v1/retail/reminders
+instance: {{instance}}
+x-auth-token: {{jwt}}
+content-type: application/json
+
+{
+  "title": "Prepare meeting",
+  "dueAt": "{{futureInstant}}"
+}
+
+### POST {{calendarBase}}/api/v1/retail/reminders/{{uuid}}/dismiss
+POST {{calendarBase}}/api/v1/retail/reminders/{{uuid}}/dismiss
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/retail/booking-pages
+GET {{calendarBase}}/api/v1/retail/booking-pages
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### POST {{calendarBase}}/api/v1/retail/booking-pages
+POST {{calendarBase}}/api/v1/retail/booking-pages
+instance: {{instance}}
+x-auth-token: {{jwt}}
+content-type: application/json
+
+{
+  "calendarUuid": "{{calendarUuid}}",
+  "title": "Intro call",
+  "duration": 30,
+  "slots": [
+    "{{futureInstant}}"
+  ]
+}
+
+### PATCH {{calendarBase}}/api/v1/retail/booking-pages/{{uuid}}
+PATCH {{calendarBase}}/api/v1/retail/booking-pages/{{uuid}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+content-type: application/json
+
+{
+  "published": true
+}
+
+### GET {{calendarBase}}/api/v1/retail/booking-pages/{{uuid}}/reservations
+GET {{calendarBase}}/api/v1/retail/booking-pages/{{uuid}}/reservations
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/retail/automation-rules
+GET {{calendarBase}}/api/v1/retail/automation-rules
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### POST {{calendarBase}}/api/v1/retail/automation-rules
+POST {{calendarBase}}/api/v1/retail/automation-rules
+instance: {{instance}}
+x-auth-token: {{jwt}}
+content-type: application/json
+
+{
+  "calendarUuid": "{{calendarUuid}}",
+  "title": "Upcoming meeting",
+  "minutesBefore": 15,
+  "trigger": "event.created"
+}
+
+### PATCH {{calendarBase}}/api/v1/retail/automation-rules/{{uuid}}
+PATCH {{calendarBase}}/api/v1/retail/automation-rules/{{uuid}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+content-type: application/json
+
+{
+  "enabled": false
+}
+
+### DELETE {{calendarBase}}/api/v1/retail/automation-rules/{{uuid}}
+DELETE {{calendarBase}}/api/v1/retail/automation-rules/{{uuid}}
+instance: {{instance}}
+x-auth-token: {{jwt}}
+
+### GET {{calendarBase}}/api/v1/retail/booking/{{slug}}
+GET {{calendarBase}}/api/v1/retail/booking/{{slug}}
+
+
+### POST {{calendarBase}}/api/v1/retail/booking/{{slug}}/reservations
+POST {{calendarBase}}/api/v1/retail/booking/{{slug}}/reservations
+content-type: application/json
+
+{
+  "startsAt": "{{publishedSlotInstant}}",
+  "name": "Guest name",
+  "email": "guest@example.test",
+  "requestId": "{{bookingRequestUuid}}"
+}
+
+### PROPFIND {{caldavBase}}/.well-known/caldav
+PROPFIND {{caldavBase}}/.well-known/caldav

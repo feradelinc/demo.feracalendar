@@ -18,7 +18,7 @@ For remote service access, configure each HTTPS base and list it explicitly in `
 
 Enter the FeraCal product instance UUID and your authorized email/password in Getting started. The proxy calls `POST /api/v1/auth` with the `instance` header. API-key login is only for actually provisioned API-key accounts; the demo creates no key or entitlement. FerAuth enforces its own account, IP whitelist and CAN.LOGIN rules. Returned tokens are held server-side and subsequent requests use `x-auth-token` plus the same owner instance.
 
-Cookies are HttpOnly and SameSite=Strict; Secure is set on HTTPS requests. This application is loopback-only and uses HTTP for the local browser connection. Public HTTPS hosting would require a separately reviewed deployment/session configuration and is not enabled. Sessions end at JWT expiry or the one-hour local deadline; logout removes both REST and CalDAV credentials. Reveal/copy is explicit for the user's own JWT and remains in component memory only.
+Cookies are HttpOnly and SameSite=Strict, with Secure enabled for the public HTTPS origin. The Node listener binds to loopback in both local and hosted modes. Sessions end at JWT expiry or the one-hour local deadline. Logout removes both REST and CalDAV credentials. A user can explicitly reveal or copy their own JWT from component memory.
 
 CalDAV uses its own entered username/password and HTTP Basic authentication. Connection is verified by a real PROPFIND returning 207; OPTIONS is not treated as authentication proof because the adapter's earlier OPTIONS responder is unauthenticated. Disconnect removes Basic credentials without disconnecting REST.
 
@@ -42,24 +42,38 @@ History is older event data sorted by startsAt/createdAt, not change-audit revis
 
 ## Mutation provenance and tenant boundaries
 
-The server creates a random session prefix for new owner-scoped keys and calendar names. Successful create responses populate an in-memory ledger of returned UUIDs. Updates, invitations, sharing and deletes must reference ledger-owned records; a browser cannot adopt arbitrary existing identifiers. Calendar UUIDs are independently checked through the owner-scoped calendar GET before risky requests. Event results are checked against their actual parent calendars, including UUID-filtered lists.
+The server creates a random session prefix for new owner-scoped keys and calendar names. Successful calendar demonstration and CalDAV creation populate an in-memory ledger of returned UUIDs. Their updates, invitations, sharing and deletes must reference ledger-owned records. Calendar UUIDs are independently checked through the owner-scoped calendar GET before mutations. Event results are checked against their actual parent calendars, including UUID-filtered lists.
+
+The walkthrough grants editor access on its demo-created calendar to the signed-in user's linked Calendar Person. The proxy checks that association through the workspace's calendar-access endpoint before sharing. If the account has no linked Person, the walkthrough links its demo Person on creation.
 
 DELETE and unshare require explicit confirmation of the exact path target/key. Cleanup uses ledger records in dependency order and stops on failure. A restart/logout loses provenance and therefore disables mutation of earlier records; use authorized upstream administration to manage preserved data later. The demo does not silently recreate access or bypass backend roles.
 
 The proxy rejects force, signed owner-scope override headers, unknown fields, arbitrary methods/URLs, path traversal and internal lifecycle operations. Remote credentials go only to their fixed service; redirects are not followed. Same-origin/custom-header checks protect local mutations, request bodies are capped at 2 MiB, responses at 8 MiB and upstream requests have 30-second timeouts. DTD/entity declarations are prohibited. Credentials are never logged or persisted. Trace downloads omit bodies/data and contact fields; screen inspectors show actual account data for the signed-in user, redacting secrets.
 
+## Scheduling routes
+
+Tasks and reminders are available to active FeraCal members on all plans. Booking pages require Starter or higher and calendar edit access. Automation rules require Complete or Beyond and calendar edit access when created. Members update and delete their own rules. Studio forwards the exact REST method with `x-auth-token` and `instance` for authenticated routes.
+
+Published booking details and reservations use the public slug and require no account credentials. Guests submit a booking request UUID and reuse it when retrying the same start time, name and email. Booking-page writes require future slots within 90 days. The explorer lists the exact paths and request fields.
+
+The **Publish booking page** form makes a new booking link available immediately. Unpublishing closes the link and preserves its reservations for the owner. If another guest takes a time before submission, the guest form refreshes available slots and keeps the name and email.
+
 ## CalDAV laboratory
 
-The protocol explorer preserves all exact, trailing-slash and descendant registrations. Use OPTIONS, HEAD, PROPFIND with Depth 0/1/infinity, and REPORT with calendar-query, calendar-multiget or sync-collection. Responses are shown as highlighted XML and parsed href/displayname/privilege/ETag/calendar-data/sync summaries. Deeper-path responses are the actual adapter result; the Studio does not invent a collection tree.
+The protocol explorer preserves exact, trailing-slash and descendant registrations. Public `/.well-known/caldav` redirects to `/caldav/`. Use the Basic username `instanceUuid|email` at the root. The Studio derives it from the workspace UUID and CalDAV username. Use OPTIONS, HEAD, PROPFIND with Depth 0/1/infinity, and REPORT with calendar-query, calendar-multiget or sync-collection. An empty PROPFIND body requests all properties. The inspector shows the upstream XML, hrefs, privileges, ETags and sync token.
 
-Use complete VCALENDAR/VEVENT documents. The proxy validates UUID.ics against UID, normalizes CRLF and emits folded UTF-8 sample lines. UTC timestamp examples avoid the adapter's verified TZID limitation. All-day and ETag discrepancies are documented separately.
+Use complete VCALENDAR/VEVENT documents. The proxy validates UUID.ics against UID, normalizes CRLF and emits folded UTF-8 sample lines. The adapter supports IANA TZIDs, treats date-times without a zone as UTC, and preserves exclusive all-day end dates.
 
-For conflict demonstration: GET a demo-created event, capture ETag, edit SUMMARY, PUT with If-Match, change again and PUT using the previous ETag. Inspect the actual 412, GET again and reapply the edit with the refreshed tag. Use conditional DELETE only on a demo-created resource. New ICS creation first verifies that its UUID does not exist; edits require If-Match. The lab never fabricates protocol statuses. The current adapter's returned PUT ETag may differ from a subsequent GET until the separate canonical-ETag patch is applied.
+Create with `If-None-Match: *` to prevent overwriting an existing UID. Read the event and use the returned ETag in `If-Match` for edits and deletes. For a conflict demonstration, submit an edit with the previous ETag, inspect the upstream 412 response, then GET the event again before editing. The deployed adapter returns the same ETag from a successful write and the subsequent read.
+
+For CalDAV writes, create a calendar in this Studio session and grant the CalDAV account owner, admin or editor access. You can create it from the REST explorer with `POST /api/v1/calendars`, using your linked Calendar Person's owner key in `key` and including the Studio session prefix in `name`.
+
+Send an empty `sync-token` to fetch a snapshot. The latest token returns an empty result. A stale token returns 403 with `valid-sync-token`. Clear the token and request a fresh snapshot.
 
 ## Running tests and live qualification
 
 `npm test` uses explicit local upstream fixtures, source inventory checks and selected standalone backend functions. Source-only patch regression tests skip when pinned backend checkouts are absent. `npm run test:ui` uses explicit browser interception and also checks all workspaces with axe WCAG A/AA and responsive widths. Install Chromium with `npx playwright install chromium` if needed.
 
-`npm run audit` checks the bundled snapshot/registry independently. To requalify against source, set `CALENDAR_SOURCE` to a checkout of populated REST master and `CALDAV_SOURCE` to CalDAV main. Changed contracts or registrations cause failure; review changes and refresh snapshots intentionally.
+`npm run audit -- --check` verifies the bundled registry. To qualify a deployment, set `CALENDAR_SOURCE` and `CALDAV_SOURCE` to checkouts of the deployed revisions listed in [coverage](coverage.md). The audit checks the bundled contracts and source registrations. Refresh the bundled snapshots and rerun the audit without `--check` after reviewing a release change.
 
 Live smoke requires explicit ignored nonproduction credentials and `SMOKE_NONPRODUCTION=true`. It prints tenant and configured bases, creates uniquely prefixed records, verifies returned event data/recurrence, exercises sharing and availability, and retains identifiers in ignored `output/live-qualification.json`. Optional shared-user and CalDAV credentials permit their additional checks. `SMOKE_CLEANUP=true` requests only this run's scoped cleanup; it is false by default. Do not treat intercepted tests as live service qualification.
