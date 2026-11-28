@@ -1,6 +1,6 @@
 # Audited operation coverage
 
-49 public REST operations include 18 scheduling operations audited from the deployed router. 32 CalDAV registrations, the discovery redirect, and 4 supplemental health operations are available. The Studio excludes 35 deprecated aliases and keeps 4 lifecycle and 2 CalDAV adapter-only REST operations outside its executor.
+51 public REST operations include 20 scheduling operations audited from the deployed router. 32 CalDAV registrations, the discovery redirect, and 4 supplemental health operations are available. The Studio excludes 35 deprecated aliases and keeps 4 lifecycle and 2 CalDAV adapter-only REST operations outside its executor.
 
 rest: source commit c40678bc1f99fd18bef20b9201470f1f638f3017; contract SHA256 30bf31b4b74891cc818ac56b69683e40b7cf9df7af44aad875585cd6125cf4f8; source reconciled true.
 
@@ -81,6 +81,8 @@ caldav: source commit b765a57ce429489b4ad6bb83e93c0adfdfa1ef69; contract SHA256 
 | caldav | HEAD | /caldav/ | HTTP Basic | src/caldav/router.js |
 | caldav | PROPFIND | /caldav/ | HTTP Basic | src/caldav/router.js |
 | rest | GET | /api/v1/retail/capabilities | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | GET | /api/v1/retail/event-trash | x-auth-token + instance | routes/api/v1/retail.js |
+| rest | POST | /api/v1/retail/event-trash/{uuid}/restore | x-auth-token + instance | routes/api/v1/retail.js |
 | rest | GET | /api/v1/retail/tasks | x-auth-token + instance | routes/api/v1/retail.js |
 | rest | POST | /api/v1/retail/tasks | x-auth-token + instance | routes/api/v1/retail.js |
 | rest | PATCH | /api/v1/retail/tasks/{uuid} | x-auth-token + instance | routes/api/v1/retail.js |

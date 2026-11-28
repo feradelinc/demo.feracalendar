@@ -161,15 +161,24 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
     }),
   );
   app.get("/demo/session", (req, res) => res.json(status(req.session)));
-  function retailRequest(op, route, session, body) {
+  async function retailRequest(op, route, session, body) {
     const rest = session?.rest;
     if (op.auth !== "none" && !rest)
       throw fail("Connect your FeraCal account first.", 401);
     const headers = op.auth === "none" ? {} : restHeaders(session);
     if (op.method !== "GET" && body !== undefined)
       headers["content-type"] = "application/json";
-    return transmit("calendar", route, op.method, headers,
+    const result = await transmit("calendar", route, op.method, headers,
       op.method === "GET" ? undefined : body, op.auth === "none" ? [] : [rest.token]);
+    if (op.id === "retail-event-trash-restore" && result.status === 200) {
+      const uuid = result._raw?.item?.uuid;
+      const record = session.trashedEvents?.get(uuid);
+      if (record) {
+        session.records.push(record);
+        session.trashedEvents.delete(uuid);
+      }
+    }
+    return result;
   }
   app.all(/^\/demo\/retail\/(.*)$/, async (req, res) => {
     const route = "/api/v1/retail/" + req.params[0];
@@ -178,7 +187,10 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
       return res.status(404).json({ message: "Calendar operation unavailable." });
     }
     try {
-      const query = op.id === "retail-reminders-list" && req.query.due === "true" ? "?due=true" : "";
+      const params = new URLSearchParams();
+      if (op.id === "retail-reminders-list" && req.query.due === "true") params.set("due", "true");
+      if (op.id === "retail-event-trash-list" && req.query.page !== undefined) params.set("page", String(req.query.page));
+      const query = params.size ? "?" + params : "";
       const response = await retailRequest(op, route + query, req.session, req.body);
       const data = response.data;
       if (response.status >= 400) return res.status(response.status).json({ message: data?.error?.message || "Calendar operation failed." });
@@ -609,7 +621,11 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
           op.method === "DELETE" &&
           result.status === 200 &&
           result._raw?.success
-        )
+        ) {
+          if (op.group === "events" && result._raw.restorableUntil) {
+            const record = s.records.find(row => row.group === "events" && row.uuid === params.uuid);
+            if (record) (s.trashedEvents ||= new Map()).set(record.uuid, record);
+          }
           s.records = s.records.filter(
             (r) =>
               !(
@@ -617,6 +633,7 @@ export function createApp({ config, fetchImpl = fetch, now = Date.now } = {}) {
                 (r.uuid === params.uuid || r.key === params.key)
               ),
           );
+        }
         res.json(clean(result));
       } else {
         if (op.auth !== "none" && op.method !== "OPTIONS" && !s?.dav)

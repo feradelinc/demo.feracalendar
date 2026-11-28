@@ -12,6 +12,7 @@ import {
   overlaps,
 } from "../../shared/data.js";
 import { Field, Json, Notice } from "./Common.jsx";
+import EventTrash from "./EventTrash.jsx";
 export default function CalendarWorkspace({ session, run, context }) {
   const [date, setDate] = useState(today()),
     [zone, setZone] = useState("America/New_York"),
@@ -23,7 +24,10 @@ export default function CalendarWorkspace({ session, run, context }) {
     [editor, setEditor] = useState(null),
     [json, setJson] = useState(false),
     [raw, setRaw] = useState(""),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [trashOpen, setTrashOpen] = useState(false),
+    [trashVersion, setTrashVersion] = useState(0),
+    [deleting, setDeleting] = useState(false);
   const dates = viewDates(date, view),
     loadSequence = useRef(0);
   useEffect(() => {
@@ -198,6 +202,29 @@ export default function CalendarWorkspace({ session, run, context }) {
       setError(e.message);
     }
   }
+  async function moveToTrash() {
+    const uuid = editor.uuid;
+    if (!window.confirm("Move this event to Trash?")) return;
+    setDeleting(true);
+    setError("");
+    try {
+      const result = await run(() => local("execute", {
+        operationId: operation("DELETE", "/api/v1/events/i/{uuid}").id,
+        params: { uuid }, confirmation: uuid,
+      }));
+      if (result.status !== 200 || result.data.success !== true) {
+        throw Error(result.data.error?.message || "Event deletion failed");
+      }
+      setEditor(null);
+      setTrashOpen(true);
+      setTrashVersion(version => version + 1);
+      await load();
+    } catch (cause) {
+      setError(cause.message);
+    } finally {
+      setDeleting(false);
+    }
+  }
   const zones = Array.from(
     new Set([
       "America/New_York",
@@ -279,6 +306,8 @@ export default function CalendarWorkspace({ session, run, context }) {
           <button onClick={load} disabled={!session.authenticated || busy}>
             {busy ? "Loading..." : "Load live calendar"}
           </button>
+          <button type="button" disabled={!session.authenticated} aria-expanded={trashOpen}
+            onClick={() => setTrashOpen(!trashOpen)}>Trash</button>
           <button
             className="primary"
             onClick={() => edit()}
@@ -399,6 +428,7 @@ export default function CalendarWorkspace({ session, run, context }) {
           local occurrence expansion.
         </p>
       </section>
+      {session.authenticated && trashOpen && <EventTrash key={session.instance + ":" + trashVersion} onRestored={load} />}
       {editor && (
         <section className="panel event-editor">
           <div className="row">
@@ -407,6 +437,9 @@ export default function CalendarWorkspace({ session, run, context }) {
             <button onClick={() => setJson(!json)}>
               {json ? "Visual editor" : "Raw JSON editor"}
             </button>
+            {editor.uuid && session.created?.some(record => record.group === "events" && record.uuid === editor.uuid) && (
+              <button type="button" disabled={deleting} onClick={moveToTrash}>Move to Trash</button>
+            )}
           </div>
           <Notice>
             Only events in demo-created calendars can be written. All-day input

@@ -3760,6 +3760,88 @@
     "example": {}
   },
   {
+    "id": "retail-event-trash-list",
+    "service": "rest",
+    "method": "GET",
+    "route": "/api/v1/retail/event-trash",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Active FeraCal workspace · calendar edit access",
+    "summary": "List recently deleted events from editable calendars",
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 999999
+        },
+        "description": "Return the requested page of up to 50 deleted events."
+      }
+    ],
+    "schema": null,
+    "conditions": [],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "example": {}
+  },
+  {
+    "id": "retail-event-trash-restore",
+    "service": "rest",
+    "method": "POST",
+    "route": "/api/v1/retail/event-trash/{uuid}/restore",
+    "group": "scheduling",
+    "retail": true,
+    "internal": false,
+    "health": false,
+    "supplemental": false,
+    "auth": "x-auth-token + instance",
+    "permission": "Active FeraCal workspace · calendar edit access",
+    "summary": "Restore a deleted event",
+    "parameters": [
+      {
+        "name": "uuid",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    ],
+    "schema": null,
+    "conditions": [
+      "Requires current edit access to the original calendar. Events are recoverable for 30 days."
+    ],
+    "source": {
+      "route": "routes/api/v1/retail.js",
+      "handler": "send"
+    },
+    "responses": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "409",
+      "503"
+    ],
+    "example": {}
+  },
+  {
     "id": "retail-tasks-list",
     "service": "rest",
     "method": "GET",

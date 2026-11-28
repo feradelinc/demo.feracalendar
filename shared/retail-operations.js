@@ -13,6 +13,10 @@ const dateExample = "2030-06-15T14:00:00Z";
 
 const definitions = [
   ["capabilities", "GET", "capabilities", "Get plan capabilities and editable calendars"],
+  ["event-trash-list", "GET", "event-trash", "List recently deleted events from editable calendars",
+    null, null, { trashPage: true }],
+  ["event-trash-restore", "POST", "event-trash/{uuid}/restore", "Restore a deleted event",
+    null, null, { conflict: true, conditions: ["Requires current edit access to the original calendar. Events are recoverable for 30 days."] }],
   ["tasks-list", "GET", "tasks", "List your tasks"],
   ["tasks-create", "POST", "tasks", "Create a task",
     schema(taskFields, ["title"]), { title: "Prepare agenda" }, { created: true }],
@@ -56,6 +60,7 @@ const definitions = [
 export const retailOperations = definitions.map(([id, method, path, summary, body = null, example = null, options = {}]) => {
   const collection = path.split("/")[0];
   const permission = options.public ? "Published booking link" :
+    collection === "event-trash" ? "Active FeraCal workspace · calendar edit access" :
     collection === "booking-pages" ? "Starter or higher · calendar edit access" :
     collection === "automation-rules" ? "Complete or Beyond · rule owner for edits" : "Active FeraCal workspace membership";
   const parameters = Array.from(path.matchAll(/\{(\w+)\}/g), ([, name]) => ({
@@ -64,6 +69,10 @@ export const retailOperations = definitions.map(([id, method, path, summary, bod
   if (options.dueFilter) parameters.push({
     name: "due", in: "query", required: false, schema: { ...string, enum: ["true"] },
     description: "Use true to return only reminders currently due.",
+  });
+  if (options.trashPage) parameters.push({
+    name: "page", in: "query", required: false, schema: integer(1, 999999),
+    description: "Return the requested page of up to 50 deleted events.",
   });
   return {
     id: "retail-" + id, service: "rest", method, route: "/api/v1/retail/" + path,

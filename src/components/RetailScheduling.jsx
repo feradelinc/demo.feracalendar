@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Field, Notice } from "./Common.jsx";
 
-async function retail(route, method = "GET", fields) {
+export async function retail(route, method = "GET", fields) {
   const response = await fetch("/demo/retail/" + route, {
     method,
     headers: method === "GET" ? {} : { "content-type": "application/json", "x-demo-request": "1" },

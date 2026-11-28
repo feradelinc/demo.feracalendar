@@ -81,7 +81,8 @@ test("the explorer preserves all scheduling methods, paths, payloads and authent
     assert.equal((await call("execute", { operationId: "retail-tasks-list" })).status, 401);
     await login(call);
     for (const op of operations.filter((o) => o.retail)) {
-      const query = op.id === "retail-reminders-list" ? { due: "true" } : {};
+      const query = op.id === "retail-reminders-list" ? { due: "true" } :
+        op.id === "retail-event-trash-list" ? { page: 2 } : {};
       const body = op.schema ? op.example : undefined;
       const result = await call("execute", { operationId: op.id, params, query, body, confirmation: user });
       assert.equal(result.status, 200, op.id);
@@ -89,14 +90,14 @@ test("the explorer preserves all scheduling methods, paths, payloads and authent
       const request = sent.at(-1);
       const expectedPath = op.route.replace("{uuid}", user).replace("{slug}", slug);
       assert.equal(request.url.pathname, expectedPath);
-      assert.equal(request.url.search, query.due ? "?due=true" : "");
+      assert.equal(request.url.searchParams.toString(), new URLSearchParams(query).toString());
       assert.equal(request.method, op.method);
       assert.equal(request.body, body === undefined ? undefined : JSON.stringify(body));
       if (body !== undefined) assert.equal(request.headers["content-type"], "application/json");
       assert.equal(request.headers.instance, op.auth === "none" ? undefined : instance);
       assert.equal(Boolean(request.headers["x-auth-token"]), op.auth !== "none");
     }
-    assert.equal(sent.length, 18);
+    assert.equal(sent.length, 20);
   }, {
     fetchImpl: async (url, options) => {
       const parsed = new URL(url);
